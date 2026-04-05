@@ -85,6 +85,67 @@ export interface BudgetLine {
   remaining: string;
 }
 
+export interface DashboardData {
+  net_savings: MonthlyNet[];
+  income_breakdown: CategorySumData[];
+  expense_breakdown: TypeSumData[];
+  income_vs_expenses: IncomeVsExpenses;
+  daily_expenses: DailySumData[];
+  daily_debts: DailySumData[];
+}
+
+export interface MonthlyNet {
+  month: number;
+  income: string;
+  expenses: string;
+  net: string;
+}
+
+export interface CategorySumData {
+  category_id: string;
+  category_name: string;
+  total: string;
+}
+
+export interface TypeSumData {
+  type: string;
+  total: string;
+}
+
+export interface IncomeVsExpenses {
+  total_income: string;
+  total_expenses: string;
+}
+
+export interface DailySumData {
+  date: string;
+  total: string;
+}
+
+export interface Card {
+  id: string;
+  user_id: string;
+  payment_method_id: string;
+  payment_method?: PaymentMethod;
+  bank: string;
+  card_limit: string;
+  recommended_max_pct: string;
+  manual_usage_override?: string;
+  level?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CardSummary {
+  card: Card;
+  auto_usage: string;
+  manual_override?: string;
+  total_usage: string;
+  usage_percent: number;
+  recommended_max: string;
+  health_color: "green" | "yellow" | "orange" | "red";
+}
+
 export interface ListResponse<T> {
   data: T[];
   total: number;
