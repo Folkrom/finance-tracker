@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 const navItems = [
+  { key: "dashboard", path: "dashboard", icon: "▣" },
   { key: "income", path: "income", icon: "↑" },
   { key: "expenses", path: "expenses", icon: "↓" },
   { key: "debt", path: "debt", icon: "↗" },
