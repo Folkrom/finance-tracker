@@ -1,0 +1,50 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "loading": "Loading...",
+    "noResults": "No results found",
+    "confirm": "Are you sure?",
+    "currency": "Currency"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "income": "Income",
+    "expenses": "Expenses",
+    "debt": "Debt",
+    "budget": "Budget",
+    "cards": "Cards",
+    "wishlist": "Wishlist",
+    "settings": "Settings"
+  },
+  "income": {
+    "title": "Income",
+    "source": "Source",
+    "amount": "Amount",
+    "category": "Category",
+    "date": "Date",
+    "addIncome": "Add Income",
+    "editIncome": "Edit Income",
+    "noIncome": "No income records yet"
+  },
+  "settings": {
+    "title": "Settings",
+    "categories": "Categories",
+    "paymentMethods": "Payment Methods",
+    "addCategory": "Add Category",
+    "addPaymentMethod": "Add Payment Method",
+    "seedDefaults": "Load Default Categories",
+    "language": "Language"
+  },
+  "auth": {
+    "login": "Log In",
+    "signup": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "logout": "Log Out"
+  }
+}

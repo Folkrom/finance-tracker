@@ -1,0 +1,50 @@
+{
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "create": "Crear",
+    "search": "Buscar",
+    "loading": "Cargando...",
+    "noResults": "No se encontraron resultados",
+    "confirm": "¿Estás seguro?",
+    "currency": "Moneda"
+  },
+  "nav": {
+    "dashboard": "Inicio",
+    "income": "Ingresos",
+    "expenses": "Gastos",
+    "debt": "Deudas",
+    "budget": "Presupuesto",
+    "cards": "Tarjetas",
+    "wishlist": "Lista de Deseos",
+    "settings": "Configuración"
+  },
+  "income": {
+    "title": "Ingresos",
+    "source": "Fuente",
+    "amount": "Monto",
+    "category": "Categoría",
+    "date": "Fecha",
+    "addIncome": "Agregar Ingreso",
+    "editIncome": "Editar Ingreso",
+    "noIncome": "No hay registros de ingresos"
+  },
+  "settings": {
+    "title": "Configuración",
+    "categories": "Categorías",
+    "paymentMethods": "Métodos de Pago",
+    "addCategory": "Agregar Categoría",
+    "addPaymentMethod": "Agregar Método de Pago",
+    "seedDefaults": "Cargar Categorías Predeterminadas",
+    "language": "Idioma"
+  },
+  "auth": {
+    "login": "Iniciar Sesión",
+    "signup": "Registrarse",
+    "email": "Correo Electrónico",
+    "password": "Contraseña",
+    "logout": "Cerrar Sesión"
+  }
+}
