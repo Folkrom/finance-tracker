@@ -22,11 +22,11 @@ func respondList[T any](c *fiber.Ctx, data []T) error {
 	return c.JSON(ListResponse[T]{Data: data, Total: len(data)})
 }
 
-func respondJSON(c *fiber.Ctx, data interface{}) error {
+func respondJSON(c *fiber.Ctx, data any) error {
 	return c.JSON(data)
 }
 
-func respondCreated(c *fiber.Ctx, data interface{}) error {
+func respondCreated(c *fiber.Ctx, data any) error {
 	return c.Status(fiber.StatusCreated).JSON(data)
 }
 

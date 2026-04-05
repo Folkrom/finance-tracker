@@ -24,7 +24,7 @@ func NewAuthMiddleware(jwtSecret string) fiber.Handler {
 			})
 		}
 
-		token, err := jwt.Parse(parts[1], func(t *jwt.Token) (interface{}, error) {
+		token, err := jwt.Parse(parts[1], func(t *jwt.Token) (any, error) {
 			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, jwt.ErrSignatureInvalid
 			}
