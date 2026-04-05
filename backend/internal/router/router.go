@@ -15,6 +15,8 @@ func Setup(
 	expenseHandler *handler.ExpenseHandler,
 	debtHandler *handler.DebtHandler,
 	budgetHandler *handler.BudgetHandler,
+	dashboardHandler *handler.DashboardHandler,
+	cardHandler *handler.CardHandler,
 ) {
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"status": "ok"})
@@ -67,4 +69,15 @@ func Setup(
 	budgets.Get("/recurring", budgetHandler.ListRecurring)
 	budgets.Put("/:id", budgetHandler.Update)
 	budgets.Delete("/:id", budgetHandler.Delete)
+
+	// Dashboard
+	api.Get("/years/:year/dashboard", dashboardHandler.GetDashboard)
+
+	// Cards
+	cards := api.Group("/cards")
+	cards.Post("/", cardHandler.Create)
+	cards.Get("/", cardHandler.GetSummaries)
+	cards.Get("/:id", cardHandler.GetByID)
+	cards.Put("/:id", cardHandler.Update)
+	cards.Delete("/:id", cardHandler.Delete)
 }
