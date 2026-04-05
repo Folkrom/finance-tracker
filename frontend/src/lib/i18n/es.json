@@ -31,6 +31,46 @@
     "editIncome": "Editar Ingreso",
     "noIncome": "No hay registros de ingresos"
   },
+  "expenses": {
+    "title": "Gastos",
+    "name": "Nombre",
+    "amount": "Monto",
+    "category": "Categoría",
+    "paymentMethod": "Método de Pago",
+    "type": "Tipo",
+    "date": "Fecha",
+    "addExpense": "Agregar Gasto",
+    "editExpense": "Editar Gasto",
+    "noExpenses": "No hay registros de gastos",
+    "typeExpense": "Gasto",
+    "typeSaving": "Ahorro",
+    "typeInvestment": "Inversión"
+  },
+  "debt": {
+    "title": "Deudas",
+    "name": "Nombre",
+    "amount": "Monto",
+    "category": "Categoría",
+    "paymentMethod": "Método de Pago",
+    "date": "Fecha",
+    "addDebt": "Agregar Deuda",
+    "editDebt": "Editar Deuda",
+    "noDebts": "No hay registros de deudas"
+  },
+  "budget": {
+    "title": "Presupuesto",
+    "category": "Categoría",
+    "limit": "Límite Mensual",
+    "spent": "Gastado",
+    "remaining": "Restante",
+    "addBudget": "Agregar Presupuesto",
+    "editBudget": "Editar Presupuesto",
+    "noBudgets": "No hay presupuestos para este mes",
+    "recurring": "Valores Recurrentes",
+    "override": "Ajuste Mensual",
+    "month": "Mes",
+    "isRecurring": "Establecer como valor recurrente"
+  },
   "settings": {
     "title": "Configuración",
     "categories": "Categorías",

@@ -31,6 +31,46 @@
     "editIncome": "Edit Income",
     "noIncome": "No income records yet"
   },
+  "expenses": {
+    "title": "Expenses",
+    "name": "Name",
+    "amount": "Amount",
+    "category": "Category",
+    "paymentMethod": "Payment Method",
+    "type": "Type",
+    "date": "Date",
+    "addExpense": "Add Expense",
+    "editExpense": "Edit Expense",
+    "noExpenses": "No expense records yet",
+    "typeExpense": "Expense",
+    "typeSaving": "Saving",
+    "typeInvestment": "Investment"
+  },
+  "debt": {
+    "title": "Debt",
+    "name": "Name",
+    "amount": "Amount",
+    "category": "Category",
+    "paymentMethod": "Payment Method",
+    "date": "Date",
+    "addDebt": "Add Debt",
+    "editDebt": "Edit Debt",
+    "noDebts": "No debt records yet"
+  },
+  "budget": {
+    "title": "Budget",
+    "category": "Category",
+    "limit": "Monthly Limit",
+    "spent": "Spent",
+    "remaining": "Remaining",
+    "addBudget": "Add Budget",
+    "editBudget": "Edit Budget",
+    "noBudgets": "No budgets set for this month",
+    "recurring": "Recurring Defaults",
+    "override": "Monthly Override",
+    "month": "Month",
+    "isRecurring": "Set as recurring default"
+  },
   "settings": {
     "title": "Settings",
     "categories": "Categories",
