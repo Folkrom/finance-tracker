@@ -53,6 +53,38 @@ func (r *DebtRepository) Delete(userID, id uuid.UUID) error {
 		Delete(&model.Debt{}).Error
 }
 
+func (r *DebtRepository) SumByMonth(userID uuid.UUID, year int) ([]MonthSum, error) {
+	var results []MonthSum
+	err := r.db.Model(&model.Debt{}).
+		Select("EXTRACT(MONTH FROM date)::int AS month, COALESCE(SUM(amount), 0) AS total").
+		Where("user_id = ? AND year = ?", userID, year).
+		Group("month").Order("month").
+		Scan(&results).Error
+	return results, err
+}
+
+func (r *DebtRepository) SumByDay(userID uuid.UUID, year int, month *int) ([]DaySumRow, error) {
+	var results []DaySumRow
+	query := r.db.Model(&model.Debt{}).
+		Select("date::text AS date, COALESCE(SUM(amount), 0) AS total").
+		Where("user_id = ? AND year = ?", userID, year)
+	if month != nil {
+		query = query.Where("EXTRACT(MONTH FROM date) = ?", *month)
+	}
+	err := query.Group("date").Order("date").Scan(&results).Error
+	return results, err
+}
+
+func (r *DebtRepository) SumByPaymentMethodMonth(userID uuid.UUID, month, year int) ([]PaymentMethodSumRow, error) {
+	var results []PaymentMethodSumRow
+	err := r.db.Model(&model.Debt{}).
+		Select("payment_method_id::text AS payment_method_id, COALESCE(SUM(amount), 0) AS total").
+		Where("user_id = ? AND payment_method_id IS NOT NULL AND EXTRACT(MONTH FROM date) = ? AND year = ?", userID, month, year).
+		Group("payment_method_id").
+		Scan(&results).Error
+	return results, err
+}
+
 func (r *DebtRepository) SumByCategoryMonth(userID, categoryID uuid.UUID, month, year int) (decimal.Decimal, error) {
 	var result decimal.Decimal
 	err := r.db.

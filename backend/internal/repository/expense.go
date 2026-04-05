@@ -53,6 +53,47 @@ func (r *ExpenseRepository) Delete(userID, id uuid.UUID) error {
 		Delete(&model.Expense{}).Error
 }
 
+func (r *ExpenseRepository) SumByMonth(userID uuid.UUID, year int) ([]MonthSum, error) {
+	var results []MonthSum
+	err := r.db.Model(&model.Expense{}).
+		Select("EXTRACT(MONTH FROM date)::int AS month, COALESCE(SUM(amount), 0) AS total").
+		Where("user_id = ? AND year = ?", userID, year).
+		Group("month").Order("month").
+		Scan(&results).Error
+	return results, err
+}
+
+func (r *ExpenseRepository) SumByType(userID uuid.UUID, year int) ([]TypeSumRow, error) {
+	var results []TypeSumRow
+	err := r.db.Model(&model.Expense{}).
+		Select("type, COALESCE(SUM(amount), 0) AS total").
+		Where("user_id = ? AND year = ?", userID, year).
+		Group("type").
+		Scan(&results).Error
+	return results, err
+}
+
+func (r *ExpenseRepository) TotalByYear(userID uuid.UUID, year int) (decimal.Decimal, error) {
+	var result decimal.Decimal
+	err := r.db.Model(&model.Expense{}).
+		Select("COALESCE(SUM(amount), 0)").
+		Where("user_id = ? AND year = ?", userID, year).
+		Scan(&result).Error
+	return result, err
+}
+
+func (r *ExpenseRepository) SumByDay(userID uuid.UUID, year int, month *int) ([]DaySumRow, error) {
+	var results []DaySumRow
+	query := r.db.Model(&model.Expense{}).
+		Select("date::text AS date, COALESCE(SUM(amount), 0) AS total").
+		Where("user_id = ? AND year = ?", userID, year)
+	if month != nil {
+		query = query.Where("EXTRACT(MONTH FROM date) = ?", *month)
+	}
+	err := query.Group("date").Order("date").Scan(&results).Error
+	return results, err
+}
+
 func (r *ExpenseRepository) SumByCategoryMonth(userID, categoryID uuid.UUID, month, year int) (decimal.Decimal, error) {
 	var result decimal.Decimal
 	err := r.db.
