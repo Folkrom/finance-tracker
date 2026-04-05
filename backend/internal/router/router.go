@@ -12,6 +12,9 @@ func Setup(
 	categoryHandler *handler.CategoryHandler,
 	paymentMethodHandler *handler.PaymentMethodHandler,
 	incomeHandler *handler.IncomeHandler,
+	expenseHandler *handler.ExpenseHandler,
+	debtHandler *handler.DebtHandler,
+	budgetHandler *handler.BudgetHandler,
 ) {
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"status": "ok"})
@@ -42,4 +45,26 @@ func Setup(
 	api.Get("/incomes/:id", incomeHandler.GetByID)
 	api.Put("/incomes/:id", incomeHandler.Update)
 	api.Delete("/incomes/:id", incomeHandler.Delete)
+
+	// Expenses (year-scoped)
+	api.Post("/years/:year/expenses", expenseHandler.Create)
+	api.Get("/years/:year/expenses", expenseHandler.ListByYear)
+	api.Get("/expenses/:id", expenseHandler.GetByID)
+	api.Put("/expenses/:id", expenseHandler.Update)
+	api.Delete("/expenses/:id", expenseHandler.Delete)
+
+	// Debts (year-scoped)
+	api.Post("/years/:year/debts", debtHandler.Create)
+	api.Get("/years/:year/debts", debtHandler.ListByYear)
+	api.Get("/debts/:id", debtHandler.GetByID)
+	api.Put("/debts/:id", debtHandler.Update)
+	api.Delete("/debts/:id", debtHandler.Delete)
+
+	// Budgets
+	budgets := api.Group("/budgets")
+	budgets.Post("/", budgetHandler.Create)
+	budgets.Get("/", budgetHandler.GetSummary)
+	budgets.Get("/recurring", budgetHandler.ListRecurring)
+	budgets.Put("/:id", budgetHandler.Update)
+	budgets.Delete("/:id", budgetHandler.Delete)
 }
