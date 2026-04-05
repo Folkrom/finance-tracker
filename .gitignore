@@ -1,0 +1,19 @@
+# Go
+backend/tmp/
+backend/.env
+
+# Node
+frontend/node_modules/
+frontend/.next/
+frontend/.env.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+
+# Obsidian (keep tracked but ignore workspace)
+finance-tracker-obs/.obsidian/workspace.json

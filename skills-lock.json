@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "skills": {
+    "mysql": {
+      "source": "planetscale/database-skills",
+      "sourceType": "github",
+      "computedHash": "6cb0725d61db4940f9eab79436753fe4ecb261f57ae8a08b2ac28676f82cbecc"
+    },
+    "neki": {
+      "source": "planetscale/database-skills",
+      "sourceType": "github",
+      "computedHash": "51721432ccfbffc23341e61ff04cb626a351c13ef04242235b0e5b5d8e13c505"
+    },
+    "postgres": {
+      "source": "planetscale/database-skills",
+      "sourceType": "github",
+      "computedHash": "2acf9fae4fcdb6c392923708b67234828f8a9f10b10dfa5d228eaab6e9108245"
+    },
+    "vitess": {
+      "source": "planetscale/database-skills",
+      "sourceType": "github",
+      "computedHash": "49fbcfc571d9e1dbdafe59dc0f757fb8c74fd296792ebf0a49ffcbda94b86dc7"
+    }
+  }
+}

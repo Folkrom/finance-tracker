@@ -1,0 +1,27 @@
+[tools]
+go = "1.22"
+node = "20"
+
+[tasks.dev-backend]
+run = "cd backend && go run ./cmd/server"
+description = "Run backend dev server"
+
+[tasks.dev-frontend]
+run = "cd frontend && npm run dev"
+description = "Run frontend dev server"
+
+[tasks.migrate-up]
+run = "cd backend && go run -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest -path=migrations -database \"$DATABASE_URL\" up"
+description = "Run database migrations"
+
+[tasks.migrate-down]
+run = "cd backend && go run -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest -path=migrations -database \"$DATABASE_URL\" down 1"
+description = "Rollback last migration"
+
+[tasks.test-backend]
+run = "cd backend && go test ./... -v"
+description = "Run backend tests"
+
+[tasks.test-frontend]
+run = "cd frontend && npm test"
+description = "Run frontend tests"
