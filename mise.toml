@@ -1,6 +1,9 @@
 [tools]
-go = "1.22"
+go = "1.24"
 node = "20"
+
+[env]
+_.file = ["backend/.env", "frontend/.env.local"]
 
 [tasks.dev-backend]
 run = "cd backend && go run ./cmd/server"
