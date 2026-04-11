@@ -39,7 +39,9 @@ export function Sidebar() {
         })}
       </nav>
       <div className="p-3 border-t">
-        <Link href="/wishlist" className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-600 hover:bg-gray-50">
+        <Link href="/wishlist"
+          className={cn("flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+            pathname.startsWith("/wishlist") ? "bg-gray-100 text-gray-900 font-medium" : "text-gray-600 hover:bg-gray-50 hover:text-gray-900")}>
           <span className="text-lg">★</span>
           {t("wishlist")}
         </Link>

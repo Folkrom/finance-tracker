@@ -146,6 +146,41 @@ export interface CardSummary {
   health_color: "green" | "yellow" | "orange" | "red";
 }
 
+export type WishlistPriority = "low" | "medium" | "high";
+export type WishlistStatus =
+  | "interested"
+  | "saving_for"
+  | "waiting_for_sale"
+  | "ordered"
+  | "purchased"
+  | "received"
+  | "cancelled";
+
+export interface WishlistItem {
+  id: string;
+  user_id: string;
+  name: string;
+  image_url?: string;
+  price?: string;
+  currency: string;
+  links: string[];
+  category_id?: string;
+  category?: Category;
+  priority: WishlistPriority;
+  status: WishlistStatus;
+  target_date?: string;
+  monthly_contribution?: string;
+  contribution_currency: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export const WISHLIST_STATUS_GROUPS = {
+  todo: ["interested"] as WishlistStatus[],
+  in_progress: ["saving_for", "waiting_for_sale", "ordered"] as WishlistStatus[],
+  complete: ["purchased", "received", "cancelled"] as WishlistStatus[],
+};
+
 export interface ListResponse<T> {
   data: T[];
   total: number;

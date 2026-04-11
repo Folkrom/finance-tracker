@@ -84,5 +84,19 @@ func (s *CategoryService) SeedDefaults(userID uuid.UUID) error {
 		_ = s.repo.Create(cat)
 	}
 
+	wishlistCategories := []string{
+		"Electronics", "Clothing", "Home & Kitchen", "Books & Media",
+		"Sports & Outdoors", "Beauty & Personal Care", "Toys & Games", "Other",
+	}
+	for i, name := range wishlistCategories {
+		cat := &model.Category{
+			Base:      model.Base{UserID: userID},
+			Name:      name,
+			Domain:    model.CategoryDomainWishlist,
+			SortOrder: i,
+		}
+		_ = s.repo.Create(cat)
+	}
+
 	return nil
 }

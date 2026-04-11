@@ -40,6 +40,7 @@ func main() {
 	debtRepo := repository.NewDebtRepository(db)
 	budgetRepo := repository.NewBudgetRepository(db)
 	cardRepo := repository.NewCardRepository(db)
+	wishlistRepo := repository.NewWishlistItemRepository(db)
 
 	// Services
 	categorySvc := service.NewCategoryService(categoryRepo)
@@ -50,6 +51,7 @@ func main() {
 	budgetSvc := service.NewBudgetService(budgetRepo, expenseRepo, debtRepo)
 	dashboardSvc := service.NewDashboardService(incomeRepo, expenseRepo, debtRepo)
 	cardSvc := service.NewCardService(cardRepo, debtRepo, paymentMethodRepo)
+	wishlistSvc := service.NewWishlistItemService(wishlistRepo)
 
 	// Handlers
 	categoryHandler := handler.NewCategoryHandler(categorySvc)
@@ -60,6 +62,7 @@ func main() {
 	budgetHandler := handler.NewBudgetHandler(budgetSvc)
 	dashboardHandler := handler.NewDashboardHandler(dashboardSvc)
 	cardHandler := handler.NewCardHandler(cardSvc)
+	wishlistHandler := handler.NewWishlistItemHandler(wishlistSvc)
 
 	// Fiber app
 	app := fiber.New()
@@ -69,7 +72,7 @@ func main() {
 	}))
 
 	// Routes
-	router.Setup(app, cfg.SupabaseJWTSecret, categoryHandler, paymentMethodHandler, incomeHandler, expenseHandler, debtHandler, budgetHandler, dashboardHandler, cardHandler)
+	router.Setup(app, cfg.SupabaseJWTSecret, categoryHandler, paymentMethodHandler, incomeHandler, expenseHandler, debtHandler, budgetHandler, dashboardHandler, cardHandler, wishlistHandler)
 
 	logger.Info("server starting", zap.String("port", cfg.Port))
 	log.Fatal(app.Listen(":" + cfg.Port))

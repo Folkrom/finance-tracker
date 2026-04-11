@@ -17,6 +17,7 @@ func Setup(
 	budgetHandler *handler.BudgetHandler,
 	dashboardHandler *handler.DashboardHandler,
 	cardHandler *handler.CardHandler,
+	wishlistHandler *handler.WishlistItemHandler,
 ) {
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"status": "ok"})
@@ -80,4 +81,13 @@ func Setup(
 	cards.Get("/:id", cardHandler.GetByID)
 	cards.Put("/:id", cardHandler.Update)
 	cards.Delete("/:id", cardHandler.Delete)
+
+	// Wishlist
+	wishlist := api.Group("/wishlist")
+	wishlist.Post("/", wishlistHandler.Create)
+	wishlist.Get("/", wishlistHandler.List)
+	wishlist.Get("/:id", wishlistHandler.GetByID)
+	wishlist.Put("/:id", wishlistHandler.Update)
+	wishlist.Patch("/:id/status", wishlistHandler.UpdateStatus)
+	wishlist.Delete("/:id", wishlistHandler.Delete)
 }
