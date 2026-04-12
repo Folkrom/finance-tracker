@@ -103,6 +103,9 @@ func (h *CategoryHandler) Update(c *fiber.Ctx) error {
 		if err == gorm.ErrRecordNotFound {
 			return respondError(c, fiber.StatusNotFound, "category not found")
 		}
+		if err == service.ErrGlobalCategoryReadOnly {
+			return respondError(c, fiber.StatusForbidden, "cannot modify global categories")
+		}
 		return respondError(c, fiber.StatusInternalServerError, "failed to update category")
 	}
 	return respondJSON(c, cat)
@@ -117,16 +120,19 @@ func (h *CategoryHandler) Delete(c *fiber.Ctx) error {
 	}
 
 	if err := h.svc.Delete(userID, id); err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return respondError(c, fiber.StatusNotFound, "category not found")
+		}
+		if err == service.ErrGlobalCategoryReadOnly || err == service.ErrSystemCategoryProtected {
+			return respondError(c, fiber.StatusForbidden, err.Error())
+		}
 		return respondError(c, fiber.StatusInternalServerError, "failed to delete category")
 	}
 	return respondNoContent(c)
 }
 
 func (h *CategoryHandler) SeedDefaults(c *fiber.Ctx) error {
-	userID := middleware.GetUserID(c)
-
-	if err := h.svc.SeedDefaults(userID); err != nil {
-		return respondError(c, fiber.StatusInternalServerError, "failed to seed defaults")
-	}
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "defaults seeded"})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "global categories are available by default",
+	})
 }
