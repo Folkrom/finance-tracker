@@ -190,3 +190,12 @@ export interface ListResponse<T> {
 export interface ErrorResponse {
   error: string;
 }
+
+export interface Profile {
+  id: string;
+  user_id: string;
+  currency: string;
+  language: string;
+  created_at: string;
+  updated_at: string;
+}

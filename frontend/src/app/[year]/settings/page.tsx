@@ -4,7 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { apiGet } from "@/lib/api";
-import { Category, PaymentMethod, ListResponse } from "@/types";
+import { Category, PaymentMethod, Profile, ListResponse } from "@/types";
+import { ProfileManager } from "@/components/settings/profile-manager";
 import { CategoryManager } from "@/components/settings/category-manager";
 import { PaymentMethodManager } from "@/components/settings/payment-method-manager";
 import { Separator } from "@/components/ui/separator";
@@ -15,18 +16,21 @@ export default function SettingsPage() {
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [incomeRes, expenseRes, pmRes] = await Promise.all([
+      const [incomeRes, expenseRes, pmRes, profileRes] = await Promise.all([
         apiGet<ListResponse<Category>>("/api/v1/categories?domain=income"),
         apiGet<ListResponse<Category>>("/api/v1/categories?domain=expense"),
         apiGet<ListResponse<PaymentMethod>>("/api/v1/payment-methods"),
+        apiGet<Profile>("/api/v1/profile"),
       ]);
       setCategories([...incomeRes.data, ...expenseRes.data]);
       setPaymentMethods(pmRes.data);
+      setProfile(profileRes);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to load settings");
     } finally {
@@ -49,6 +53,10 @@ export default function SettingsPage() {
   return (
     <div className="space-y-8 max-w-3xl">
       <h1 className="text-2xl font-bold">{t("title")}</h1>
+
+      {profile && <ProfileManager profile={profile} onRefresh={loadData} />}
+
+      <Separator />
 
       <CategoryManager categories={categories} onRefresh={loadData} />
 
