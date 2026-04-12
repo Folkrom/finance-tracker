@@ -47,7 +47,7 @@ func (s *CategoryService) Update(userID, id uuid.UUID, name string, color *strin
 	if err != nil {
 		return nil, err
 	}
-	if cat.IsGlobal() {
+	if cat.IsGlobal {
 		return nil, ErrGlobalCategoryReadOnly
 	}
 	cat.Name = name
@@ -66,7 +66,7 @@ func (s *CategoryService) Delete(userID, id uuid.UUID) error {
 	if cat.IsSystem {
 		return ErrSystemCategoryProtected
 	}
-	if cat.IsGlobal() {
+	if cat.IsGlobal {
 		return ErrGlobalCategoryReadOnly
 	}
 	return s.repo.Delete(userID, id)

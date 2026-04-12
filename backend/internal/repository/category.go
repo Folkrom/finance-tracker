@@ -25,7 +25,11 @@ func (r *CategoryRepository) ListByDomain(userID uuid.UUID, domain model.Categor
 		Where("(user_id IS NULL OR user_id = ?) AND domain = ?", userID, domain).
 		Order("sort_order ASC, name ASC").
 		Find(&cats).Error
-	return cats, err
+	if err != nil {
+		return nil, err
+	}
+	setGlobalFlag(cats)
+	return cats, nil
 }
 
 // GetByID returns a category if it's global or owned by the user.
@@ -37,6 +41,7 @@ func (r *CategoryRepository) GetByID(userID, id uuid.UUID) (*model.Category, err
 	if err != nil {
 		return nil, err
 	}
+	setGlobalFlagSingle(&cat)
 	return &cat, nil
 }
 
@@ -59,5 +64,16 @@ func (r *CategoryRepository) GetOtherCategory(domain model.CategoryDomain) (*mod
 	if err != nil {
 		return nil, err
 	}
+	setGlobalFlagSingle(&cat)
 	return &cat, nil
+}
+
+func setGlobalFlag(cats []model.Category) {
+	for i := range cats {
+		cats[i].IsGlobal = cats[i].UserID == nil
+	}
+}
+
+func setGlobalFlagSingle(cat *model.Category) {
+	cat.IsGlobal = cat.UserID == nil
 }

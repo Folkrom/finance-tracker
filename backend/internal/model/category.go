@@ -18,12 +18,13 @@ type Category struct {
 	Color     *string        `gorm:"type:varchar(7)" json:"color,omitempty"`
 	SortOrder int            `gorm:"default:0" json:"sort_order"`
 	IsSystem  bool           `gorm:"not null;default:false" json:"is_system"`
+	IsGlobal  bool           `gorm:"-" json:"is_global"`
 }
 
 func (Category) TableName() string {
 	return "categories"
 }
 
-func (c Category) IsGlobal() bool {
+func (c Category) IsGlobalCategory() bool {
 	return c.UserID == nil
 }
