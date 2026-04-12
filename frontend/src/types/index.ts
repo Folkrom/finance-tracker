@@ -1,10 +1,11 @@
 export interface Category {
   id: string;
-  user_id: string;
+  user_id: string | null;
   name: string;
   domain: "income" | "expense" | "wishlist";
   color?: string;
   sort_order: number;
+  is_system: boolean;
   created_at: string;
   updated_at: string;
 }

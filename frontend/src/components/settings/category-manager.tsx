@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { X, Check, Pencil } from "lucide-react";
+import { X, Check, Pencil, Lock } from "lucide-react";
 import { Category } from "@/types";
 import { apiPost, apiPut, apiDelete } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
@@ -34,7 +34,6 @@ export function CategoryManager({ categories, onRefresh }: CategoryManagerProps)
   const [newName, setNewName] = useState("");
   const [newDomain, setNewDomain] = useState<Domain>("income");
   const [creating, setCreating] = useState(false);
-  const [seeding, setSeeding] = useState(false);
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
@@ -54,19 +53,6 @@ export function CategoryManager({ categories, onRefresh }: CategoryManagerProps)
       toast.error(err instanceof Error ? err.message : "Failed to create category");
     } finally {
       setCreating(false);
-    }
-  };
-
-  const handleSeedDefaults = async () => {
-    setSeeding(true);
-    try {
-      await apiPost("/api/v1/categories/seed", {});
-      toast.success("Default categories loaded");
-      onRefresh();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to seed defaults");
-    } finally {
-      setSeeding(false);
     }
   };
 
@@ -153,14 +139,6 @@ export function CategoryManager({ categories, onRefresh }: CategoryManagerProps)
           <Button onClick={handleCreate} disabled={creating || !newName.trim()}>
             {tCommon("create")}
           </Button>
-
-          <Button
-            variant="outline"
-            onClick={handleSeedDefaults}
-            disabled={seeding}
-          >
-            {seeding ? tCommon("loading") : t("seedDefaults")}
-          </Button>
         </div>
       </div>
 
@@ -175,37 +153,54 @@ export function CategoryManager({ categories, onRefresh }: CategoryManagerProps)
               {grouped[domain].length === 0 ? (
                 <span className="text-sm text-muted-foreground">None</span>
               ) : (
-                grouped[domain].map((cat) =>
-                  editingId === cat.id ? (
-                    <div key={cat.id} className="flex items-center gap-1">
-                      <Input
-                        value={editingName}
-                        onChange={(e) => setEditingName(e.target.value)}
-                        className="h-7 w-32 text-sm"
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") handleConfirmEdit(cat);
-                          if (e.key === "Escape") setEditingId(null);
-                        }}
-                        autoFocus
-                      />
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 w-7 p-0"
-                        onClick={() => handleConfirmEdit(cat)}
-                      >
-                        <Check className="size-3" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 w-7 p-0"
-                        onClick={() => setEditingId(null)}
-                      >
-                        <X className="size-3" />
-                      </Button>
-                    </div>
-                  ) : (
+                grouped[domain].map((cat) => {
+                  const isGlobal = cat.user_id === null;
+
+                  if (isGlobal) {
+                    return (
+                      <div key={cat.id} className="flex items-center gap-0.5">
+                        <Badge variant="secondary">
+                          <Lock className="size-3 mr-1 opacity-50" />
+                          {cat.name}
+                        </Badge>
+                      </div>
+                    );
+                  }
+
+                  if (editingId === cat.id) {
+                    return (
+                      <div key={cat.id} className="flex items-center gap-1">
+                        <Input
+                          value={editingName}
+                          onChange={(e) => setEditingName(e.target.value)}
+                          className="h-7 w-32 text-sm"
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleConfirmEdit(cat);
+                            if (e.key === "Escape") setEditingId(null);
+                          }}
+                          autoFocus
+                        />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0"
+                          onClick={() => handleConfirmEdit(cat)}
+                        >
+                          <Check className="size-3" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0"
+                          onClick={() => setEditingId(null)}
+                        >
+                          <X className="size-3" />
+                        </Button>
+                      </div>
+                    );
+                  }
+
+                  return (
                     <div key={cat.id} className="flex items-center gap-0.5">
                       <Badge
                         variant="secondary"
@@ -223,8 +218,8 @@ export function CategoryManager({ categories, onRefresh }: CategoryManagerProps)
                         <X className="size-3" />
                       </button>
                     </div>
-                  )
-                )
+                  );
+                })
               )}
             </div>
           </div>
