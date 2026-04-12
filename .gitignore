@@ -1,6 +1,10 @@
 # Go
 backend/tmp/
 backend/.env
+backend/server
+
+# Superpowers skills (symlinks)
+skills/
 
 # Node
 frontend/node_modules/
