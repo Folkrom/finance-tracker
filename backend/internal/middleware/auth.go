@@ -53,6 +53,7 @@ func NewAuthMiddleware(keyfunc jwt.Keyfunc) fiber.Handler {
 		}
 
 		c.Locals("user_id", userID)
+		c.Locals("claims", claims)
 		return c.Next()
 	}
 }
@@ -60,4 +61,9 @@ func NewAuthMiddleware(keyfunc jwt.Keyfunc) fiber.Handler {
 // GetUserID extracts the authenticated user's UUID from the Fiber context.
 func GetUserID(c *fiber.Ctx) uuid.UUID {
 	return c.Locals("user_id").(uuid.UUID)
+}
+
+// GetClaims extracts the full JWT claims from the Fiber context.
+func GetClaims(c *fiber.Ctx) jwt.MapClaims {
+	return c.Locals("claims").(jwt.MapClaims)
 }

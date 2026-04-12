@@ -43,7 +43,8 @@ func TestAuthMiddleware_ValidToken(t *testing.T) {
 	app.Use(NewAuthMiddleware(testKeyfunc))
 	app.Get("/test", func(c *fiber.Ctx) error {
 		uid := c.Locals("user_id")
-		return c.JSON(fiber.Map{"user_id": uid})
+		claims := c.Locals("claims")
+		return c.JSON(fiber.Map{"user_id": uid, "has_claims": claims != nil})
 	})
 
 	req := httptest.NewRequest(http.MethodGet, "/test", nil)
