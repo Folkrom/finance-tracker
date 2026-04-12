@@ -1,9 +1,16 @@
 package service
 
 import (
+	"errors"
+
 	"github.com/folkrom/finance-tracker/backend/internal/model"
 	"github.com/folkrom/finance-tracker/backend/internal/repository"
 	"github.com/google/uuid"
+)
+
+var (
+	ErrGlobalCategoryReadOnly  = errors.New("cannot modify global categories")
+	ErrSystemCategoryProtected = errors.New("cannot delete system categories")
 )
 
 type CategoryService struct {
@@ -16,7 +23,7 @@ func NewCategoryService(repo *repository.CategoryRepository) *CategoryService {
 
 func (s *CategoryService) Create(userID uuid.UUID, name string, domain model.CategoryDomain, color *string) (*model.Category, error) {
 	cat := &model.Category{
-		Base:   model.Base{UserID: userID},
+		UserID: &userID,
 		Name:   name,
 		Domain: domain,
 		Color:  color,
@@ -40,6 +47,9 @@ func (s *CategoryService) Update(userID, id uuid.UUID, name string, color *strin
 	if err != nil {
 		return nil, err
 	}
+	if cat.IsGlobal() {
+		return nil, ErrGlobalCategoryReadOnly
+	}
 	cat.Name = name
 	cat.Color = color
 	if err := s.repo.Update(cat); err != nil {
@@ -49,54 +59,20 @@ func (s *CategoryService) Update(userID, id uuid.UUID, name string, color *strin
 }
 
 func (s *CategoryService) Delete(userID, id uuid.UUID) error {
+	cat, err := s.repo.GetByID(userID, id)
+	if err != nil {
+		return err
+	}
+	if cat.IsSystem {
+		return ErrSystemCategoryProtected
+	}
+	if cat.IsGlobal() {
+		return ErrGlobalCategoryReadOnly
+	}
 	return s.repo.Delete(userID, id)
 }
 
-func (s *CategoryService) SeedDefaults(userID uuid.UUID) error {
-	incomeCategories := []string{
-		"Salary", "Bonus", "Freelance", "Dividends", "Interest", "Side Hustle",
-	}
-	expenseCategories := []string{
-		"Home Expenses", "Eating Out", "Self Care", "Coffee/Drink", "Entertainment",
-		"Transportation", "Groceries", "Utilities", "Clothes", "Other",
-		"Card Payments", "Savings/Investment", "Alcohol", "Drugs", "Taxes",
-		"Knowledge", "Tech",
-	}
-
-	for i, name := range incomeCategories {
-		cat := &model.Category{
-			Base:      model.Base{UserID: userID},
-			Name:      name,
-			Domain:    model.CategoryDomainIncome,
-			SortOrder: i,
-		}
-		// Ignore duplicate errors (idempotent seeding)
-		_ = s.repo.Create(cat)
-	}
-
-	for i, name := range expenseCategories {
-		cat := &model.Category{
-			Base:      model.Base{UserID: userID},
-			Name:      name,
-			Domain:    model.CategoryDomainExpense,
-			SortOrder: i,
-		}
-		_ = s.repo.Create(cat)
-	}
-
-	wishlistCategories := []string{
-		"Electronics", "Clothing", "Home & Kitchen", "Books & Media",
-		"Sports & Outdoors", "Beauty & Personal Care", "Toys & Games", "Other",
-	}
-	for i, name := range wishlistCategories {
-		cat := &model.Category{
-			Base:      model.Base{UserID: userID},
-			Name:      name,
-			Domain:    model.CategoryDomainWishlist,
-			SortOrder: i,
-		}
-		_ = s.repo.Create(cat)
-	}
-
+// SeedDefaults is deprecated — global categories exist from migration.
+func (s *CategoryService) SeedDefaults(_ uuid.UUID) error {
 	return nil
 }
