@@ -21,7 +21,7 @@ func TestBudgetRepository_Create(t *testing.T) {
 	cat := &model.Category{
 		Base: model.Base{UserID: uuid.New()},
 		Name: "Food",
-		Type: model.CategoryTypeExpense,
+		Domain: model.CategoryDomainExpense,
 	}
 	require.NoError(t, catRepo.Create(cat))
 
@@ -50,8 +50,8 @@ func TestBudgetRepository_ListByMonthYear(t *testing.T) {
 	catRepo := repository.NewCategoryRepository(db)
 	userID := uuid.New()
 
-	cat1 := &model.Category{Base: model.Base{UserID: userID}, Name: "Food", Type: model.CategoryTypeExpense}
-	cat2 := &model.Category{Base: model.Base{UserID: userID}, Name: "Transport", Type: model.CategoryTypeExpense}
+	cat1 := &model.Category{Base: model.Base{UserID: userID}, Name: "Food", Domain: model.CategoryDomainExpense}
+	cat2 := &model.Category{Base: model.Base{UserID: userID}, Name: "Transport", Domain: model.CategoryDomainExpense}
 	require.NoError(t, catRepo.Create(cat1))
 	require.NoError(t, catRepo.Create(cat2))
 
@@ -103,7 +103,7 @@ func TestBudgetRepository_Update(t *testing.T) {
 	cat := &model.Category{
 		Base: model.Base{UserID: uuid.New()},
 		Name: "Food",
-		Type: model.CategoryTypeExpense,
+		Domain: model.CategoryDomainExpense,
 	}
 	require.NoError(t, catRepo.Create(cat))
 
@@ -138,7 +138,7 @@ func TestBudgetRepository_Delete(t *testing.T) {
 	cat := &model.Category{
 		Base: model.Base{UserID: uuid.New()},
 		Name: "Food",
-		Type: model.CategoryTypeExpense,
+		Domain: model.CategoryDomainExpense,
 	}
 	require.NoError(t, catRepo.Create(cat))
 

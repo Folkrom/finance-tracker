@@ -31,7 +31,7 @@ func TestBudgetHandler_CreateAndGetSummary(t *testing.T) {
 	cat := &model.Category{
 		Base: model.Base{UserID: userID},
 		Name: "Food",
-		Type: model.CategoryTypeExpense,
+		Domain: model.CategoryDomainExpense,
 	}
 	require.NoError(t, catRepo.Create(cat))
 
