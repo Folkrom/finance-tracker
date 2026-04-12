@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func NewAuthMiddleware(jwtSecret string) fiber.Handler {
+func NewAuthMiddleware(keyfunc jwt.Keyfunc) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		authHeader := c.Get("Authorization")
 		if authHeader == "" {
@@ -24,12 +24,7 @@ func NewAuthMiddleware(jwtSecret string) fiber.Handler {
 			})
 		}
 
-		token, err := jwt.Parse(parts[1], func(t *jwt.Token) (any, error) {
-			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, jwt.ErrSignatureInvalid
-			}
-			return []byte(jwtSecret), nil
-		})
+		token, err := jwt.Parse(parts[1], keyfunc)
 		if err != nil || !token.Valid {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"error": "invalid or expired token",

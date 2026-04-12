@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/MicahParks/keyfunc/v3"
 	"github.com/folkrom/finance-tracker/backend/internal/config"
 	"github.com/folkrom/finance-tracker/backend/internal/database"
 	"github.com/folkrom/finance-tracker/backend/internal/handler"
@@ -25,6 +26,12 @@ func main() {
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
+	}
+
+	jwksURL := cfg.SupabaseURL + "/auth/v1/.well-known/jwks.json"
+	jwks, err := keyfunc.NewDefault([]string{jwksURL})
+	if err != nil {
+		log.Fatalf("failed to fetch JWKS from %s: %v", jwksURL, err)
 	}
 
 	db, err := database.New(cfg, logger)
@@ -72,7 +79,7 @@ func main() {
 	}))
 
 	// Routes
-	router.Setup(app, cfg.SupabaseJWTSecret, categoryHandler, paymentMethodHandler, incomeHandler, expenseHandler, debtHandler, budgetHandler, dashboardHandler, cardHandler, wishlistHandler)
+	router.Setup(app, jwks.Keyfunc, categoryHandler, paymentMethodHandler, incomeHandler, expenseHandler, debtHandler, budgetHandler, dashboardHandler, cardHandler, wishlistHandler)
 
 	logger.Info("server starting", zap.String("port", cfg.Port))
 	log.Fatal(app.Listen(":" + cfg.Port))

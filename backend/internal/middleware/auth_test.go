@@ -11,6 +11,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const testSecret = "test-secret"
+
+func testKeyfunc(token *jwt.Token) (any, error) {
+	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+		return nil, jwt.ErrSignatureInvalid
+	}
+	return []byte(testSecret), nil
+}
+
 func generateTestJWT(secret string, userID string, expired bool) string {
 	exp := time.Now().Add(time.Hour)
 	if expired {
@@ -27,12 +36,11 @@ func generateTestJWT(secret string, userID string, expired bool) string {
 }
 
 func TestAuthMiddleware_ValidToken(t *testing.T) {
-	secret := "test-secret"
 	userID := "550e8400-e29b-41d4-a716-446655440000"
-	token := generateTestJWT(secret, userID, false)
+	token := generateTestJWT(testSecret, userID, false)
 
 	app := fiber.New()
-	app.Use(NewAuthMiddleware(secret))
+	app.Use(NewAuthMiddleware(testKeyfunc))
 	app.Get("/test", func(c *fiber.Ctx) error {
 		uid := c.Locals("user_id")
 		return c.JSON(fiber.Map{"user_id": uid})
@@ -47,7 +55,7 @@ func TestAuthMiddleware_ValidToken(t *testing.T) {
 
 func TestAuthMiddleware_MissingToken(t *testing.T) {
 	app := fiber.New()
-	app.Use(NewAuthMiddleware("test-secret"))
+	app.Use(NewAuthMiddleware(testKeyfunc))
 	app.Get("/test", func(c *fiber.Ctx) error {
 		return c.SendStatus(http.StatusOK)
 	})
@@ -59,11 +67,10 @@ func TestAuthMiddleware_MissingToken(t *testing.T) {
 }
 
 func TestAuthMiddleware_ExpiredToken(t *testing.T) {
-	secret := "test-secret"
-	token := generateTestJWT(secret, "some-user", true)
+	token := generateTestJWT(testSecret, "550e8400-e29b-41d4-a716-446655440000", true)
 
 	app := fiber.New()
-	app.Use(NewAuthMiddleware(secret))
+	app.Use(NewAuthMiddleware(testKeyfunc))
 	app.Get("/test", func(c *fiber.Ctx) error {
 		return c.SendStatus(http.StatusOK)
 	})

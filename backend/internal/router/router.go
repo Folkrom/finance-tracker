@@ -4,11 +4,12 @@ import (
 	"github.com/folkrom/finance-tracker/backend/internal/handler"
 	"github.com/folkrom/finance-tracker/backend/internal/middleware"
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 func Setup(
 	app *fiber.App,
-	jwtSecret string,
+	keyfunc jwt.Keyfunc,
 	categoryHandler *handler.CategoryHandler,
 	paymentMethodHandler *handler.PaymentMethodHandler,
 	incomeHandler *handler.IncomeHandler,
@@ -23,7 +24,7 @@ func Setup(
 		return c.JSON(fiber.Map{"status": "ok"})
 	})
 
-	api := app.Group("/api/v1", middleware.NewAuthMiddleware(jwtSecret))
+	api := app.Group("/api/v1", middleware.NewAuthMiddleware(keyfunc))
 
 	// Categories
 	categories := api.Group("/categories")
@@ -45,23 +46,23 @@ func Setup(
 	// Income (year-scoped)
 	api.Post("/years/:year/incomes", incomeHandler.Create)
 	api.Get("/years/:year/incomes", incomeHandler.ListByYear)
-	api.Get("/incomes/:id", incomeHandler.GetByID)
-	api.Put("/incomes/:id", incomeHandler.Update)
-	api.Delete("/incomes/:id", incomeHandler.Delete)
+	api.Get("/years/:year/incomes/:id", incomeHandler.GetByID)
+	api.Put("/years/:year/incomes/:id", incomeHandler.Update)
+	api.Delete("/years/:year/incomes/:id", incomeHandler.Delete)
 
 	// Expenses (year-scoped)
 	api.Post("/years/:year/expenses", expenseHandler.Create)
 	api.Get("/years/:year/expenses", expenseHandler.ListByYear)
-	api.Get("/expenses/:id", expenseHandler.GetByID)
-	api.Put("/expenses/:id", expenseHandler.Update)
-	api.Delete("/expenses/:id", expenseHandler.Delete)
+	api.Get("/years/:year/expenses/:id", expenseHandler.GetByID)
+	api.Put("/years/:year/expenses/:id", expenseHandler.Update)
+	api.Delete("/years/:year/expenses/:id", expenseHandler.Delete)
 
 	// Debts (year-scoped)
 	api.Post("/years/:year/debts", debtHandler.Create)
 	api.Get("/years/:year/debts", debtHandler.ListByYear)
-	api.Get("/debts/:id", debtHandler.GetByID)
-	api.Put("/debts/:id", debtHandler.Update)
-	api.Delete("/debts/:id", debtHandler.Delete)
+	api.Get("/years/:year/debts/:id", debtHandler.GetByID)
+	api.Put("/years/:year/debts/:id", debtHandler.Update)
+	api.Delete("/years/:year/debts/:id", debtHandler.Delete)
 
 	// Budgets
 	budgets := api.Group("/budgets")
