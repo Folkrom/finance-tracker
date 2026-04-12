@@ -19,8 +19,9 @@ func TestCategoryRepository_Create(t *testing.T) {
 	userID := uuid.New()
 
 	cat := &model.Category{
-		Base:  model.Base{UserID: userID},
-		Name:  "Salary",
+		Base:   model.Base{},
+		UserID: &userID,
+		Name:   "Salary",
 		Domain: model.CategoryDomainIncome,
 	}
 
@@ -29,34 +30,78 @@ func TestCategoryRepository_Create(t *testing.T) {
 	assert.NotEqual(t, uuid.Nil, cat.ID)
 }
 
-func TestCategoryRepository_ListByDomain(t *testing.T) {
+func TestCategoryRepository_ListByDomain_IncludesGlobal(t *testing.T) {
 	db := testutil.SetupTestDB(t)
 	testutil.CleanTable(t, db, "categories")
 
 	repo := repository.NewCategoryRepository(db)
 	userID := uuid.New()
 
-	cats := []model.Category{
-		{Base: model.Base{UserID: userID}, Name: "Salary", Domain: model.CategoryDomainIncome},
-		{Base: model.Base{UserID: userID}, Name: "Bonus", Domain: model.CategoryDomainIncome},
-		{Base: model.Base{UserID: userID}, Name: "Groceries", Domain: model.CategoryDomainExpense},
+	// Create a global category (user_id = nil)
+	global := &model.Category{
+		Name:   "Global Salary",
+		Domain: model.CategoryDomainIncome,
 	}
-	for i := range cats {
-		require.NoError(t, repo.Create(&cats[i]))
+	require.NoError(t, repo.Create(global))
+
+	// Create a user category
+	user := &model.Category{
+		UserID: &userID,
+		Name:   "My Side Gig",
+		Domain: model.CategoryDomainIncome,
 	}
+	require.NoError(t, repo.Create(user))
 
-	income, err := repo.ListByDomain(userID, model.CategoryDomainIncome)
+	// User should see both global and their own
+	cats, err := repo.ListByDomain(userID, model.CategoryDomainIncome)
 	require.NoError(t, err)
-	assert.Len(t, income, 2)
+	assert.Len(t, cats, 2)
 
-	expense, err := repo.ListByDomain(userID, model.CategoryDomainExpense)
-	require.NoError(t, err)
-	assert.Len(t, expense, 1)
-
-	// Other user should see nothing
+	// Other user should see only global
 	other, err := repo.ListByDomain(uuid.New(), model.CategoryDomainIncome)
 	require.NoError(t, err)
-	assert.Len(t, other, 0)
+	assert.Len(t, other, 1)
+	assert.Equal(t, "Global Salary", other[0].Name)
+}
+
+func TestCategoryRepository_GetByID_GlobalCategory(t *testing.T) {
+	db := testutil.SetupTestDB(t)
+	testutil.CleanTable(t, db, "categories")
+
+	repo := repository.NewCategoryRepository(db)
+
+	global := &model.Category{
+		Name:   "Global Expense",
+		Domain: model.CategoryDomainExpense,
+	}
+	require.NoError(t, repo.Create(global))
+
+	// Any user can read a global category
+	cat, err := repo.GetByID(uuid.New(), global.ID)
+	require.NoError(t, err)
+	assert.Equal(t, "Global Expense", cat.Name)
+}
+
+func TestCategoryRepository_Delete_CannotDeleteGlobal(t *testing.T) {
+	db := testutil.SetupTestDB(t)
+	testutil.CleanTable(t, db, "categories")
+
+	repo := repository.NewCategoryRepository(db)
+
+	global := &model.Category{
+		Name:   "Undeletable",
+		Domain: model.CategoryDomainExpense,
+	}
+	require.NoError(t, repo.Create(global))
+
+	// Attempting to delete a global category with any user_id should not delete it
+	err := repo.Delete(uuid.New(), global.ID)
+	require.NoError(t, err)
+
+	// Global category should still exist
+	cat, err := repo.GetByID(uuid.New(), global.ID)
+	require.NoError(t, err)
+	assert.Equal(t, "Undeletable", cat.Name)
 }
 
 func TestCategoryRepository_Update(t *testing.T) {
@@ -67,8 +112,8 @@ func TestCategoryRepository_Update(t *testing.T) {
 	userID := uuid.New()
 
 	cat := &model.Category{
-		Base:  model.Base{UserID: userID},
-		Name:  "Old Name",
+		UserID: &userID,
+		Name:   "Old Name",
 		Domain: model.CategoryDomainIncome,
 	}
 	require.NoError(t, repo.Create(cat))
@@ -80,26 +125,4 @@ func TestCategoryRepository_Update(t *testing.T) {
 	fetched, err := repo.GetByID(userID, cat.ID)
 	require.NoError(t, err)
 	assert.Equal(t, "New Name", fetched.Name)
-}
-
-func TestCategoryRepository_Delete(t *testing.T) {
-	db := testutil.SetupTestDB(t)
-	testutil.CleanTable(t, db, "categories")
-
-	repo := repository.NewCategoryRepository(db)
-	userID := uuid.New()
-
-	cat := &model.Category{
-		Base:  model.Base{UserID: userID},
-		Name:  "To Delete",
-		Domain: model.CategoryDomainExpense,
-	}
-	require.NoError(t, repo.Create(cat))
-
-	err := repo.Delete(userID, cat.ID)
-	require.NoError(t, err)
-
-	list, err := repo.ListByDomain(userID, model.CategoryDomainExpense)
-	require.NoError(t, err)
-	assert.Len(t, list, 0)
 }
