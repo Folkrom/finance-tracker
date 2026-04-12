@@ -48,6 +48,7 @@ func main() {
 	budgetRepo := repository.NewBudgetRepository(db)
 	cardRepo := repository.NewCardRepository(db)
 	wishlistRepo := repository.NewWishlistItemRepository(db)
+	profileRepo := repository.NewProfileRepository(db)
 
 	// Services
 	categorySvc := service.NewCategoryService(categoryRepo)
@@ -59,6 +60,7 @@ func main() {
 	dashboardSvc := service.NewDashboardService(incomeRepo, expenseRepo, debtRepo)
 	cardSvc := service.NewCardService(cardRepo, debtRepo, paymentMethodRepo)
 	wishlistSvc := service.NewWishlistItemService(wishlistRepo)
+	profileSvc := service.NewProfileService(profileRepo)
 
 	// Handlers
 	categoryHandler := handler.NewCategoryHandler(categorySvc)
@@ -70,6 +72,7 @@ func main() {
 	dashboardHandler := handler.NewDashboardHandler(dashboardSvc)
 	cardHandler := handler.NewCardHandler(cardSvc)
 	wishlistHandler := handler.NewWishlistItemHandler(wishlistSvc)
+	profileHandler := handler.NewProfileHandler(profileSvc)
 
 	// Fiber app
 	app := fiber.New()
@@ -79,7 +82,7 @@ func main() {
 	}))
 
 	// Routes
-	router.Setup(app, jwks.Keyfunc, categoryHandler, paymentMethodHandler, incomeHandler, expenseHandler, debtHandler, budgetHandler, dashboardHandler, cardHandler, wishlistHandler)
+	router.Setup(app, jwks.Keyfunc, profileRepo, categoryHandler, paymentMethodHandler, incomeHandler, expenseHandler, debtHandler, budgetHandler, dashboardHandler, cardHandler, wishlistHandler, profileHandler)
 
 	logger.Info("server starting", zap.String("port", cfg.Port))
 	log.Fatal(app.Listen(":" + cfg.Port))

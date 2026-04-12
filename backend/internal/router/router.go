@@ -3,6 +3,7 @@ package router
 import (
 	"github.com/folkrom/finance-tracker/backend/internal/handler"
 	"github.com/folkrom/finance-tracker/backend/internal/middleware"
+	"github.com/folkrom/finance-tracker/backend/internal/repository"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -10,6 +11,7 @@ import (
 func Setup(
 	app *fiber.App,
 	keyfunc jwt.Keyfunc,
+	profileRepo *repository.ProfileRepository,
 	categoryHandler *handler.CategoryHandler,
 	paymentMethodHandler *handler.PaymentMethodHandler,
 	incomeHandler *handler.IncomeHandler,
@@ -19,12 +21,13 @@ func Setup(
 	dashboardHandler *handler.DashboardHandler,
 	cardHandler *handler.CardHandler,
 	wishlistHandler *handler.WishlistItemHandler,
+	profileHandler *handler.ProfileHandler,
 ) {
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"status": "ok"})
 	})
 
-	api := app.Group("/api/v1", middleware.NewAuthMiddleware(keyfunc))
+	api := app.Group("/api/v1", middleware.NewAuthMiddleware(keyfunc), middleware.NewProfileMiddleware(profileRepo))
 
 	// Categories
 	categories := api.Group("/categories")
@@ -91,4 +94,9 @@ func Setup(
 	wishlist.Put("/:id", wishlistHandler.Update)
 	wishlist.Patch("/:id/status", wishlistHandler.UpdateStatus)
 	wishlist.Delete("/:id", wishlistHandler.Delete)
+
+	// Profile
+	profile := api.Group("/profile")
+	profile.Get("/", profileHandler.Get)
+	profile.Put("/", profileHandler.Update)
 }
