@@ -76,3 +76,51 @@ func (s *CategoryService) Delete(userID, id uuid.UUID) error {
 func (s *CategoryService) SeedDefaults(_ uuid.UUID) error {
 	return nil
 }
+
+func (s *CategoryService) CreateGlobal(name string, domain model.CategoryDomain, color *string, sortOrder int) (*model.Category, error) {
+	cat := &model.Category{
+		Name:      name,
+		Domain:    domain,
+		Color:     color,
+		SortOrder: sortOrder,
+	}
+	if err := s.repo.CreateGlobal(cat); err != nil {
+		return nil, err
+	}
+	return cat, nil
+}
+
+func (s *CategoryService) UpdateGlobal(id uuid.UUID, name string, color *string, sortOrder *int) (*model.Category, error) {
+	cat, err := s.repo.GetGlobalByID(id)
+	if err != nil {
+		return nil, err
+	}
+	if name != "" {
+		cat.Name = name
+	}
+	if color != nil {
+		cat.Color = color
+	}
+	if sortOrder != nil {
+		cat.SortOrder = *sortOrder
+	}
+	if err := s.repo.Update(cat); err != nil {
+		return nil, err
+	}
+	return cat, nil
+}
+
+func (s *CategoryService) DeleteGlobal(id uuid.UUID) error {
+	cat, err := s.repo.GetGlobalByID(id)
+	if err != nil {
+		return err
+	}
+	if cat.IsSystem {
+		return ErrSystemCategoryProtected
+	}
+	other, err := s.repo.GetOtherCategory(cat.Domain)
+	if err != nil {
+		return err
+	}
+	return s.repo.ReassignAndDelete(cat.ID, other.ID)
+}
