@@ -68,6 +68,41 @@ func (r *CategoryRepository) GetOtherCategory(domain model.CategoryDomain) (*mod
 	return &cat, nil
 }
 
+// GetGlobalByID returns a category only if it's global (user_id IS NULL).
+func (r *CategoryRepository) GetGlobalByID(id uuid.UUID) (*model.Category, error) {
+	var cat model.Category
+	err := r.db.
+		Where("id = ? AND user_id IS NULL", id).
+		First(&cat).Error
+	if err != nil {
+		return nil, err
+	}
+	setGlobalFlagSingle(&cat)
+	return &cat, nil
+}
+
+// CreateGlobal creates a global category (user_id = NULL).
+func (r *CategoryRepository) CreateGlobal(cat *model.Category) error {
+	cat.UserID = nil
+	return r.db.Create(cat).Error
+}
+
+// ReassignAndDelete reassigns all FK references to replacementID then deletes categoryID, in a transaction.
+func (r *CategoryRepository) ReassignAndDelete(categoryID, replacementID uuid.UUID) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		tables := []string{"incomes", "expenses", "debts", "budgets", "wishlist_items"}
+		for _, table := range tables {
+			if err := tx.Exec(
+				"UPDATE "+table+" SET category_id = ? WHERE category_id = ?",
+				replacementID, categoryID,
+			).Error; err != nil {
+				return err
+			}
+		}
+		return tx.Where("id = ?", categoryID).Delete(&model.Category{}).Error
+	})
+}
+
 func setGlobalFlag(cats []model.Category) {
 	for i := range cats {
 		cats[i].IsGlobal = cats[i].UserID == nil
