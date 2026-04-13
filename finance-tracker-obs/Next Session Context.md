@@ -1,150 +1,163 @@
 # Next Session Context
 
-## Goal: Full CRUD & Front↔Back Integration Audit
-
-Verify every module's CRUD operations work end-to-end: frontend forms submit correctly, backend routes respond, data persists, and the UI updates. This doc maps every frontend API call to its backend route so agents can systematically check each one.
-
----
-
-## Prerequisites
-
-Before starting verification:
-
-1. `docker compose up -d` — Postgres on port 5466
-2. `mise run migrate-up` — all 8 migrations applied
-3. `mise run dev-backend` — Go server on :8080
-4. `mise run dev-frontend` — Next.js on :3000
-5. Log in at http://localhost:3000/login (creates Supabase session cookies)
-6. Seed categories: Settings page → click "Seed Defaults" for both expense and income domains
+**Last updated:** 2026-04-12
+**Branch:** main (pushed to origin)
 
 ---
 
-## Module Verification Checklist
+## What Was Completed This Session (2026-04-12)
 
-### 1. Categories (Settings page)
+### Plan 5 — Admin Dashboard & Category Revamp (ALL STEPS DONE)
 
-| Operation | Frontend call | Backend route |
-|-----------|--------------|---------------|
-| Seed defaults | `POST /api/v1/categories/seed` | `POST /categories/seed` |
-| Create | `POST /api/v1/categories` | `POST /categories/` |
-| List (income) | `GET /api/v1/categories?domain=income` | `GET /categories/` |
-| List (expense) | `GET /api/v1/categories?domain=expense` | `GET /categories/` |
-| List (wishlist) | `GET /api/v1/categories?domain=wishlist` | `GET /categories/` |
-| Update | `PUT /api/v1/categories/:id` | `PUT /categories/:id` |
-| Delete | `DELETE /api/v1/categories/:id` | `DELETE /categories/:id` |
+**Step 1: Category Revamp** (Plan 5a)
+- Migration `000009_category_revamp` — nullable `user_id`, `is_system` column, 28 global categories seeded, user categories deduplicated, partial unique indexes
+- Category model: `UserID *uuid.UUID` (nullable), `IsSystem bool`, `IsGlobal` computed field
+- Repository: `ListByDomain` returns globals + user's own, `Delete` scoped to user only, `GetOtherCategory` for fallback
+- Service: `ErrGlobalCategoryReadOnly`, `ErrSystemCategoryProtected` sentinel errors, `SeedDefaults` is now a no-op
+- Frontend: removed seed button, global categories show Lock icon + secondary badge, no edit/delete on globals
 
-**Verify:** domain query param filtering works, seeding creates both income and expense defaults, wishlist categories are separate.
+**Step 2: User Profile** (Plan 5b)
+- Migration `000010_create_profiles` — `user_id` unique, `currency` (default MXN), `language` (default en)
+- Profile model, repo, service (GetOrCreate, Update with currency/language validation)
+- Profile middleware — auto-creates profile on first authenticated request, `sync.Map` cache
+- Handler: GET (calls GetOrCreate), PUT (maps validation errors to 400)
+- Frontend: ProfileManager component in Settings — currency selector (MXN/USD/EUR/GBP/BRL/COP/ARS), language toggle (en/es)
 
-### 2. Payment Methods (Settings page)
+**Step 3: Admin Middleware & Routes** (Plan 5c)
+- Auth middleware now stores full `jwt.MapClaims` in `c.Locals("claims")` + `GetClaims` helper
+- Admin middleware: `NewAdminMiddleware()` checks `app_metadata.role == "admin"`, `IsAdmin(c)` helper
+- `AdminStats` model (not a DB model, just response struct)
+- Category repo: `GetGlobalByID`, `CreateGlobal`, `ReassignAndDelete` (transactional FK reassignment to "Other")
+- Admin repo: `GetStats()` — counts for users, profiles, global/user categories
+- Category service: `CreateGlobal`, `UpdateGlobal`, `DeleteGlobal`
+- Admin service: `GetStats()`
+- Admin handler: `CreateCategory`, `UpdateCategory`, `DeleteCategory`, `GetStats`
+- Router: `/api/v1/admin/` group with admin middleware, category CRUD + stats
+- main.go: wired adminRepo, adminSvc, adminHandler
 
-| Operation | Frontend call | Backend route |
-|-----------|--------------|---------------|
-| Create | `POST /api/v1/payment-methods` | `POST /payment-methods/` |
-| List | `GET /api/v1/payment-methods` | `GET /payment-methods/` |
-| Get by ID | `GET /api/v1/payment-methods/:id` | `GET /payment-methods/:id` |
-| Update | `PUT /api/v1/payment-methods/:id` | `PUT /payment-methods/:id` |
-| Delete | `DELETE /api/v1/payment-methods/:id` | `DELETE /payment-methods/:id` |
+**Step 4: Admin Dashboard Frontend** (Plan 5d)
+- `useAdmin` hook — reads `app_metadata.role` from Supabase session JWT
+- `AdminStats` type in `types/admin.ts`
+- Admin layout (`/admin`) — separate sidebar (Stats, Categories), header (Back to app + logout), auth gate redirects non-admins
+- `/admin/stats` page — 4 stat cards (Users, Profiles, Global Categories, User Categories)
+- `/admin/categories` page — grouped by domain, full CRUD via dialogs (create/edit/delete), system categories locked
+- Main header: Shield "Admin" link, visible only for admin users
 
-**Verify:** type field (Cash, Debit Card, Credit Card, Digital Wallet, Crypto) persists correctly, payment methods appear in Expense and Debt dropdowns.
+### CRUD Audit (all 9 modules)
+- Parallel agent audit of all frontend→backend routes across Categories, Payment Methods, Income, Expenses, Debt, Budget, Dashboard, Cards, Wishlist
+- Result: 100% alignment, no gaps found
 
-### 3. Income (year-scoped)
-
-| Operation | Frontend call | Backend route |
-|-----------|--------------|---------------|
-| Create | `POST /api/v1/years/:year/incomes` | `POST /years/:year/incomes` |
-| List by year | `GET /api/v1/years/:year/incomes` | `GET /years/:year/incomes` |
-| Update | `PUT /api/v1/years/:year/incomes/:id` | `PUT /years/:year/incomes/:id` |
-| Delete | `DELETE /api/v1/years/:year/incomes/:id` | `DELETE /years/:year/incomes/:id` |
-
-**Verify:** year scoping filters correctly (income from 2025 shouldn't appear in 2026), category association works, amount/currency persist.
-
-### 4. Expenses (year-scoped)
-
-| Operation | Frontend call | Backend route |
-|-----------|--------------|---------------|
-| Create | `POST /api/v1/years/:year/expenses` | `POST /years/:year/expenses` |
-| List by year | `GET /api/v1/years/:year/expenses` | `GET /years/:year/expenses` |
-| Update | `PUT /api/v1/years/:year/expenses/:id` | `PUT /years/:year/expenses/:id` |
-| Delete | `DELETE /api/v1/years/:year/expenses/:id` | `DELETE /years/:year/expenses/:id` |
-
-**Verify:** payment method relation, category from shared list, type field (Expense/Saving/Investment), date→month derivation.
-
-### 5. Debt (year-scoped)
-
-| Operation | Frontend call | Backend route |
-|-----------|--------------|---------------|
-| Create | `POST /api/v1/years/:year/debts` | `POST /years/:year/debts` |
-| List by year | `GET /api/v1/years/:year/debts` | `GET /years/:year/debts` |
-| Update | `PUT /api/v1/years/:year/debts/:id` | `PUT /years/:year/debts/:id` |
-| Delete | `DELETE /api/v1/years/:year/debts/:id` | `DELETE /years/:year/debts/:id` |
-
-**Verify:** payment method relation (creditor), category from shared list, affects Card usage calculation.
-
-### 6. Budget
-
-| Operation | Frontend call | Backend route |
-|-----------|--------------|---------------|
-| Create | `POST /api/v1/budgets` | `POST /budgets/` |
-| Get summary | `GET /api/v1/budgets?year=:year&month=:month` | `GET /budgets/` |
-| List recurring | `GET /api/v1/budgets/recurring` | `GET /budgets/recurring` |
-| Update | `PUT /api/v1/budgets/:id` | `PUT /budgets/:id` |
-| Delete | `DELETE /api/v1/budgets/:id` | `DELETE /budgets/:id` |
-
-**Verify:** budget remaining = limit - expenses - debts for that category/month, recurring defaults work, per-month overrides don't affect template.
-
-### 7. Dashboard
-
-| Operation | Frontend call | Backend route |
-|-----------|--------------|---------------|
-| Get data | `GET /api/v1/years/:year/dashboard` | `GET /years/:year/dashboard` |
-
-**Verify:** all 6 charts render with data (Net Savings line, Income donut, Expenses donut, Income vs Expenses donut, Daily Expenses bar, Daily Debt bar). Requires seeded data across multiple months to see meaningful charts.
-
-### 8. Cards
-
-| Operation | Frontend call | Backend route |
-|-----------|--------------|---------------|
-| Create | `POST /api/v1/cards` | `POST /cards/` |
-| List summaries | `GET /api/v1/cards?year=:year&month=:month` | `GET /cards/` |
-| Get by ID | `GET /api/v1/cards/:id` | `GET /cards/:id` |
-| Update | `PUT /api/v1/cards/:id` | `PUT /cards/:id` |
-| Delete | `DELETE /api/v1/cards/:id` | `DELETE /cards/:id` |
-
-**Verify:** health indicator colors match thresholds (green 0-20%, yellow 21-30%, orange 31-70%, red 71+%), usage auto-calculates from Debt entries for linked payment method, manual override works.
-
-### 9. Wishlist (non-year-scoped)
-
-| Operation | Frontend call | Backend route |
-|-----------|--------------|---------------|
-| Create | `POST /api/v1/wishlist` | `POST /wishlist/` |
-| List | `GET /api/v1/wishlist` | `GET /wishlist/` |
-| Update | `PUT /api/v1/wishlist/:id` | `PUT /wishlist/:id` |
-| Update status | `PATCH /api/v1/wishlist/:id/status` | `PATCH /wishlist/:id/status` |
-| Delete | `DELETE /api/v1/wishlist/:id` | `DELETE /wishlist/:id` |
-
-**Verify:** three views render (gallery, table, board), status change via Kanban dropdown calls PATCH, links array (max 5), priority sorting, category from wishlist domain (not expense).
+### Other Changes
+- Added git remote `origin` at `git@github.com:Folkrom/finance-tracker.git`
+- `.gitignore`: added `backend/server` and `skills/`
+- Consolidated all docs from `docs/superpowers/` into `finance-tracker-obs/` (single source of truth)
+- Fixed budget test compile errors (`model.CategoryTypeExpense` → `model.CategoryDomainExpense`)
+- Fixed `IsGlobal` field/method conflict in Go (renamed method to `IsGlobalCategory()`)
 
 ---
 
-## Known Issues to Fix
+## Current Architecture
 
-### Pre-existing test compile errors
-`backend/internal/service/budget_test.go` references `model.CategoryTypeExpense` which does not exist on the current `Category` model. Dead test code from an earlier iteration. `go test ./...` fails. Either delete the test file or update it to match the current model.
+### Backend (Go/Fiber)
+- **Migrations:** `000001` through `000010` (golang-migrate, PostgreSQL)
+- **Auth:** Supabase JWKS-based JWT verification via `keyfunc/v3`, `user_id` + `claims` stored in Fiber Locals
+- **Middleware chain:** Auth → Profile (auto-create) → route handlers. Admin routes add Admin middleware.
+- **Categories:** Hybrid global (`user_id IS NULL`) + user-scoped. `is_system=true` for "Other" per domain (undeletable). Admin can CRUD globals, users can only CRUD their own.
+- **Admin routes:** `POST/PUT/DELETE /api/v1/admin/categories`, `GET /api/v1/admin/stats`
+- **Profile:** auto-created on first request, currency (MXN default) + language (en default)
 
-### Cross-cutting concerns to check during audit
+### Frontend (Next.js 16)
+- **App router:** `[year]/` layout for main app, `/admin/` layout for admin, `/wishlist/` standalone, `/login/` standalone
+- **Auth:** Supabase SSR client, `proxy.ts` for session refresh
+- **API:** `lib/api.ts` — `apiGet`, `apiPost`, `apiPut`, `apiPatch`, `apiDelete` with auto auth headers
+- **UI:** shadcn/ui components, lucide-react icons, sonner toasts
+- **i18n:** next-intl (EN/ES)
 
-- **CORS:** frontend on :3000 → backend on :8080. Currently `AllowOrigins: "http://localhost:3000"` in main.go. Verify no CORS errors in browser console.
-- **Auth cookie refresh:** proxy.ts wires `updateSession` on every request. Verify session survives page reloads and multi-tab usage.
-- **Error handling:** API errors should surface as toast messages, not unhandled rejections. Check browser console during each CRUD operation.
-- **Multi-tenant isolation:** every query scopes by `user_id` from JWT `sub` claim. If testing with multiple users, verify data doesn't leak between accounts.
-- **i18n:** toggle between EN/ES and verify labels on forms, toasts, and empty states.
+### Database Tables
+`categories`, `payment_methods`, `incomes`, `expenses`, `debts`, `budgets`, `cards`, `wishlist_items`, `profiles`
 
 ---
 
-## What shipped in the last session (2026-04-11)
+## What Needs Testing (Not Yet Verified in Browser)
 
-- `frontend/src/proxy.ts` — Next.js 16 proxy wiring for Supabase session refresh (fixes auth bug)
-- JWKS-based JWT validation — backend fetches public keys from Supabase instead of shared secret
-- Year-scoped routes fix — income/expenses/debts get/put/delete now match frontend paths
-- `go mod tidy` — `lib/pq` moved to direct dependency, `keyfunc/v3` added
-- Removed `SUPABASE_JWT_SECRET` from config/env (no longer needed)
+These features were implemented but not manually tested in a running browser:
+
+1. **Profile (Plan 5b):**
+   - Profile auto-creation on first request
+   - Currency/language selectors in Settings
+   - Profile persists across sessions
+
+2. **Admin (Plans 5c + 5d):**
+   - Set `app_metadata.role = "admin"` in Supabase dashboard for your user
+   - Log out and back in to get fresh JWT with admin claim
+   - Verify: Shield "Admin" link appears in header
+   - Verify: `/admin/stats` shows correct counts
+   - Verify: `/admin/categories` shows all 28 global categories grouped by domain
+   - Verify: Can create/edit/delete non-system categories via dialogs
+   - Verify: System categories ("Other") show lock icon, can't be deleted
+   - Verify: Non-admin user can't access `/admin` (redirected)
+   - Verify: Non-admin gets 403 from backend admin routes
+
+3. **Category revamp (Plan 5a):**
+   - Global categories appear for all users without seeding
+   - Users can create their own categories alongside globals
+   - Users can't edit/delete global categories (lock icon, no controls)
+   - "Seed Defaults" button removed from Settings
+
+---
+
+## What's Next — Potential Plan 6 Ideas
+
+Plan 5 is fully complete. Here are potential next steps (not yet designed or prioritized):
+
+1. **i18n completion** — admin pages use hardcoded English, add to translation files
+2. **Admin user management** — `GET /api/v1/admin/users` (list), `GET /api/v1/admin/users/:id` (detail with stats). Requires Supabase Admin API integration.
+3. **Audit logging** — track admin actions (category create/update/delete)
+4. **Currency formatting** — use profile.currency to format amounts across the app
+5. **Dark mode** — shadcn supports it, just needs theme toggle
+6. **Data export** — CSV/PDF export of income, expenses, debts per year
+7. **Recurring transactions** — auto-create income/expenses on a schedule
+8. **Mobile responsiveness** — current layout is desktop-first
+9. **Notifications/reminders** — budget threshold alerts
+10. **Multi-currency support** — per-transaction currency with conversion
+
+### Open Questions from Plan 5
+- Should users be able to "hide" global categories they don't use?
+- Do we need admin audit logging from day 1?
+- Should currency be per-profile or per-year?
+
+---
+
+## How to Start Dev
+
+```bash
+# Terminal 1: Database
+docker compose up -d
+
+# Terminal 2: Migrations
+cd backend && mise run migrate-up
+
+# Terminal 3: Backend
+mise run dev-backend  # localhost:8080
+
+# Terminal 4: Frontend
+cd frontend && npm run dev  # localhost:3000
+```
+
+## Key File Paths
+
+| What | Path |
+|------|------|
+| Backend entry | `backend/cmd/server/main.go` |
+| Router | `backend/internal/router/router.go` |
+| Auth middleware | `backend/internal/middleware/auth.go` |
+| Admin middleware | `backend/internal/middleware/admin.go` |
+| Profile middleware | `backend/internal/middleware/profile.go` |
+| Migrations | `backend/migrations/000001-000010` |
+| Frontend app | `frontend/src/app/` |
+| Admin pages | `frontend/src/app/admin/` |
+| Admin components | `frontend/src/components/admin/` |
+| API helpers | `frontend/src/lib/api.ts` |
+| Types | `frontend/src/types/index.ts` |
+| Supabase client | `frontend/src/lib/supabase/client.ts` |
+| All specs & plans | `finance-tracker-obs/` |
