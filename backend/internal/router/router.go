@@ -22,6 +22,7 @@ func Setup(
 	cardHandler *handler.CardHandler,
 	wishlistHandler *handler.WishlistItemHandler,
 	profileHandler *handler.ProfileHandler,
+	adminHandler *handler.AdminHandler,
 ) {
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"status": "ok"})
@@ -99,4 +100,12 @@ func Setup(
 	profile := api.Group("/profile")
 	profile.Get("/", profileHandler.Get)
 	profile.Put("/", profileHandler.Update)
+
+	// Admin
+	admin := api.Group("/admin", middleware.NewAdminMiddleware())
+	adminCats := admin.Group("/categories")
+	adminCats.Post("/", adminHandler.CreateCategory)
+	adminCats.Put("/:id", adminHandler.UpdateCategory)
+	adminCats.Delete("/:id", adminHandler.DeleteCategory)
+	admin.Get("/stats", adminHandler.GetStats)
 }
