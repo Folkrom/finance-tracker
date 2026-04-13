@@ -31,7 +31,7 @@ func IsAdmin(c *fiber.Ctx) bool {
 }
 
 func isAdmin(claims jwt.MapClaims) bool {
-	appMeta, ok := claims["app_metadata"].(map[string]interface{})
+	appMeta, ok := claims["app_metadata"].(map[string]any)
 	if !ok {
 		return false
 	}
