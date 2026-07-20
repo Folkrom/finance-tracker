@@ -108,6 +108,7 @@ export function PaymentMethodManager({
           <div className="space-y-1">
             <Label>Type</Label>
             <Select
+              items={PM_TYPE_LABELS}
               value={newType}
               onValueChange={(val) => {
                 if (val !== null) setNewType(val as PMType);

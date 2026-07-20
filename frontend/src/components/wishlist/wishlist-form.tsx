@@ -123,6 +123,25 @@ export function WishlistForm({
 
   const links = watch("links");
 
+  const categoryItems = [
+    { value: "", label: "— None —" },
+    ...categories.map((cat) => ({ value: cat.id, label: cat.name })),
+  ];
+  const priorityItems = [
+    { value: "low", label: t("priorityLow") },
+    { value: "medium", label: t("priorityMedium") },
+    { value: "high", label: t("priorityHigh") },
+  ];
+  const statusItems = [
+    { value: "interested", label: t("statusInterested") },
+    { value: "saving_for", label: t("statusSavingFor") },
+    { value: "waiting_for_sale", label: t("statusWaitingForSale") },
+    { value: "ordered", label: t("statusOrdered") },
+    { value: "purchased", label: t("statusPurchased") },
+    { value: "received", label: t("statusReceived") },
+    { value: "cancelled", label: t("statusCancelled") },
+  ];
+
   return (
     <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose(); }}>
       <DialogContent className="sm:max-w-lg">
@@ -203,6 +222,7 @@ export function WishlistForm({
               control={control}
               render={({ field }) => (
                 <Select
+                  items={categoryItems}
                   value={field.value ?? ""}
                   onValueChange={(val) => {
                     field.onChange(val === "" || val === null ? undefined : val);
@@ -212,10 +232,9 @@ export function WishlistForm({
                     <SelectValue placeholder={t("category")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">— None —</SelectItem>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>
-                        {cat.name}
+                    {categoryItems.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -233,6 +252,7 @@ export function WishlistForm({
                 control={control}
                 render={({ field }) => (
                   <Select
+                    items={priorityItems}
                     value={field.value}
                     onValueChange={(val) => {
                       if (val !== null) field.onChange(val);
@@ -242,9 +262,11 @@ export function WishlistForm({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="low">{t("priorityLow")}</SelectItem>
-                      <SelectItem value="medium">{t("priorityMedium")}</SelectItem>
-                      <SelectItem value="high">{t("priorityHigh")}</SelectItem>
+                      {priorityItems.map((item) => (
+                        <SelectItem key={item.value} value={item.value}>
+                          {item.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 )}
@@ -258,6 +280,7 @@ export function WishlistForm({
                 control={control}
                 render={({ field }) => (
                   <Select
+                    items={statusItems}
                     value={field.value}
                     onValueChange={(val) => {
                       if (val !== null) field.onChange(val);
@@ -267,13 +290,11 @@ export function WishlistForm({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="interested">{t("statusInterested")}</SelectItem>
-                      <SelectItem value="saving_for">{t("statusSavingFor")}</SelectItem>
-                      <SelectItem value="waiting_for_sale">{t("statusWaitingForSale")}</SelectItem>
-                      <SelectItem value="ordered">{t("statusOrdered")}</SelectItem>
-                      <SelectItem value="purchased">{t("statusPurchased")}</SelectItem>
-                      <SelectItem value="received">{t("statusReceived")}</SelectItem>
-                      <SelectItem value="cancelled">{t("statusCancelled")}</SelectItem>
+                      {statusItems.map((item) => (
+                        <SelectItem key={item.value} value={item.value}>
+                          {item.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 )}

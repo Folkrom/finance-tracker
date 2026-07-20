@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -52,6 +54,13 @@ export function CardForm({
 }: CardFormProps) {
   const t = useTranslations("cards");
   const tCommon = useTranslations("common");
+  const params = useParams();
+  const year = params.year as string;
+
+  const paymentMethodItems = creditCardPaymentMethods.map((pm) => ({
+    value: pm.id,
+    label: pm.name,
+  }));
 
   const {
     register,
@@ -111,29 +120,42 @@ export function CardForm({
           {/* Payment Method */}
           <div className="space-y-2">
             <Label>{t("selectCreditCard")}</Label>
-            <Controller
-              name="payment_method_id"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  value={field.value}
-                  onValueChange={(val) => {
-                    if (val !== null) field.onChange(val);
-                  }}
+            {creditCardPaymentMethods.length === 0 ? (
+              <p className="text-sm text-muted-foreground rounded-lg border border-dashed px-3 py-2">
+                {t("noCreditCardMethods")}{" "}
+                <Link
+                  href={`/${year}/settings`}
+                  className="underline underline-offset-2 hover:text-foreground"
                 >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder={t("selectCreditCard")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {creditCardPaymentMethods.map((pm) => (
-                      <SelectItem key={pm.id} value={pm.id}>
-                        {pm.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
+                  {tCommon("addInSettings")}
+                </Link>
+              </p>
+            ) : (
+              <Controller
+                name="payment_method_id"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    items={paymentMethodItems}
+                    value={field.value}
+                    onValueChange={(val) => {
+                      if (val !== null) field.onChange(val);
+                    }}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder={t("selectCreditCard")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {paymentMethodItems.map((item) => (
+                        <SelectItem key={item.value} value={item.value}>
+                          {item.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            )}
             {errors.payment_method_id && (
               <p className="text-sm text-destructive">{errors.payment_method_id.message}</p>
             )}

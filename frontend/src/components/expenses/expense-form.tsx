@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -55,6 +57,8 @@ export function ExpenseForm({
 }: ExpenseFormProps) {
   const t = useTranslations("expenses");
   const tCommon = useTranslations("common");
+  const params = useParams();
+  const year = params.year as string;
 
   const {
     register,
@@ -102,6 +106,20 @@ export function ExpenseForm({
   }, [open, defaultValues, reset]);
 
   const expenseCategories = categories.filter((c) => c.domain === "expense");
+
+  const typeItems = [
+    { value: "expense", label: t("typeExpense") },
+    { value: "saving", label: t("typeSaving") },
+    { value: "investment", label: t("typeInvestment") },
+  ];
+  const categoryItems = [
+    { value: "", label: "— None —" },
+    ...expenseCategories.map((cat) => ({ value: cat.id, label: cat.name })),
+  ];
+  const paymentMethodItems = [
+    { value: "", label: "— None —" },
+    ...paymentMethods.map((pm) => ({ value: pm.id, label: pm.name })),
+  ];
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose(); }}>
@@ -172,6 +190,7 @@ export function ExpenseForm({
               control={control}
               render={({ field }) => (
                 <Select
+                  items={typeItems}
                   value={field.value}
                   onValueChange={(val) => {
                     if (val !== null) field.onChange(val);
@@ -181,9 +200,11 @@ export function ExpenseForm({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="expense">{t("typeExpense")}</SelectItem>
-                    <SelectItem value="saving">{t("typeSaving")}</SelectItem>
-                    <SelectItem value="investment">{t("typeInvestment")}</SelectItem>
+                    {typeItems.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               )}
@@ -197,6 +218,7 @@ export function ExpenseForm({
               control={control}
               render={({ field }) => (
                 <Select
+                  items={categoryItems}
                   value={field.value ?? ""}
                   onValueChange={(val) => {
                     field.onChange(val === "" || val === null ? undefined : val);
@@ -206,10 +228,9 @@ export function ExpenseForm({
                     <SelectValue placeholder={t("category")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">— None —</SelectItem>
-                    {expenseCategories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>
-                        {cat.name}
+                    {categoryItems.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -220,30 +241,42 @@ export function ExpenseForm({
 
           <div className="space-y-2">
             <Label>{t("paymentMethod")}</Label>
-            <Controller
-              name="payment_method_id"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  value={field.value ?? ""}
-                  onValueChange={(val) => {
-                    field.onChange(val === "" || val === null ? undefined : val);
-                  }}
+            {paymentMethods.length === 0 ? (
+              <p className="text-sm text-muted-foreground rounded-lg border border-dashed px-3 py-2">
+                {tCommon("noPaymentMethods")}{" "}
+                <Link
+                  href={`/${year}/settings`}
+                  className="underline underline-offset-2 hover:text-foreground"
                 >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder={t("paymentMethod")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">— None —</SelectItem>
-                    {paymentMethods.map((pm) => (
-                      <SelectItem key={pm.id} value={pm.id}>
-                        {pm.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
+                  {tCommon("addInSettings")}
+                </Link>
+              </p>
+            ) : (
+              <Controller
+                name="payment_method_id"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    items={paymentMethodItems}
+                    value={field.value ?? ""}
+                    onValueChange={(val) => {
+                      field.onChange(val === "" || val === null ? undefined : val);
+                    }}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder={t("paymentMethod")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {paymentMethodItems.map((item) => (
+                        <SelectItem key={item.value} value={item.value}>
+                          {item.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            )}
           </div>
 
           <div className="space-y-2">

@@ -106,6 +106,15 @@ export function BudgetForm({
 
   const expenseCategories = categories.filter((c) => c.domain === "expense");
 
+  const categoryItems = expenseCategories.map((cat) => ({
+    value: cat.id,
+    label: cat.name,
+  }));
+  const monthItems = MONTHS.map((m) => ({
+    value: String(m),
+    label: MONTH_NAMES[m - 1],
+  }));
+
   return (
     <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose(); }}>
       <DialogContent className="sm:max-w-md">
@@ -122,6 +131,7 @@ export function BudgetForm({
               control={control}
               render={({ field }) => (
                 <Select
+                  items={categoryItems}
                   value={field.value ?? ""}
                   onValueChange={(val) => {
                     if (val !== null) field.onChange(val);
@@ -131,9 +141,9 @@ export function BudgetForm({
                     <SelectValue placeholder={t("category")} />
                   </SelectTrigger>
                   <SelectContent>
-                    {expenseCategories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>
-                        {cat.name}
+                    {categoryItems.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -187,6 +197,7 @@ export function BudgetForm({
                 control={control}
                 render={({ field }) => (
                   <Select
+                    items={monthItems}
                     value={String(field.value)}
                     onValueChange={(val) => {
                       if (val !== null) field.onChange(Number(val));
@@ -196,9 +207,9 @@ export function BudgetForm({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {MONTHS.map((m) => (
-                        <SelectItem key={m} value={String(m)}>
-                          {MONTH_NAMES[m - 1]}
+                      {monthItems.map((item) => (
+                        <SelectItem key={item.value} value={item.value}>
+                          {item.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
