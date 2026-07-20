@@ -133,9 +133,28 @@ mise run dev-frontend
 
 Open http://localhost:3000. You'll land on the login page.
 
-### 7. First-time setup after login
+### 7. Test user (dev only)
 
-After signing up/logging in, go to **Settings** and click **"Load Default Categories"** to seed the default category lists for Income, Expenses/Debt, and Wishlist.
+Local dev credentials for the login page:
+
+| Field | Value |
+|---|---|
+| Email | `ft-tester-8k2p@mailinator.com` |
+| Password | `FinanceTest123!` |
+
+If the user doesn't exist yet, create it against the Supabase project:
+
+```bash
+source frontend/.env.local 2>/dev/null || true
+curl -X POST "$NEXT_PUBLIC_SUPABASE_URL/auth/v1/signup" \
+  -H "apikey: $NEXT_PUBLIC_SUPABASE_ANON_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"ft-tester-8k2p@mailinator.com","password":"FinanceTest123!"}'
+```
+
+> **Note:** The Supabase project has **email confirmation enabled**, so a freshly signed-up user can't log in until confirmed. For dev, either disable it (Supabase dashboard → **Authentication → Sign In / Providers → Email → Confirm email** off) and then run the curl above, or open the public [mailinator inbox](https://www.mailinator.com/v4/public/inboxes.jsp?to=ft-tester-8k2p) and click the confirmation link. Signup confirmation emails are rate-limited (~1/hour on the free tier).
+
+Global categories (28 of them) are seeded by migrations and appear for every user automatically — no per-user setup needed after login.
 
 ## mise Tasks
 
@@ -145,6 +164,7 @@ After signing up/logging in, go to **Settings** and click **"Load Default Catego
 | `dev-frontend` | `mise run dev-frontend` | Start Next.js on `:3000` |
 | `migrate-up` | `mise run migrate-up` | Apply all pending migrations |
 | `migrate-down` | `mise run migrate-down` | Rollback last migration |
+| `test-db-setup` | `mise run test-db-setup` | Create + migrate the `finance_tracker_test` DB (required once before `test-backend`) |
 | `test-backend` | `mise run test-backend` | Run Go tests |
 | `test-frontend` | `mise run test-frontend` | Run frontend tests |
 

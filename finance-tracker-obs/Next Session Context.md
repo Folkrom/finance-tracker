@@ -1,11 +1,32 @@
 # Next Session Context
 
-**Last updated:** 2026-04-12
-**Branch:** main (pushed to origin)
+**Last updated:** 2026-07-19
+**Branch:** main
 
 ---
 
-## What Was Completed This Session (2026-04-12)
+## What Was Completed This Session (2026-07-19)
+
+### Backend test suite fixed (was broken since Plan 5a)
+- Root cause: `Category.UserID *uuid.UUID` shadows the embedded `Base.UserID`, so test fixtures using `Base: model.Base{UserID: ...}` silently inserted **global** categories (`user_id = NULL`). The `handler` and `repository` packages run concurrently and both created a global "Food"/expense category → `idx_categories_global_unique` duplicate-key failure.
+- Fixed fixtures in `handler/budget_test.go` and `repository/budget_test.go` to use `UserID: &userID`.
+- **Tests now use a dedicated `finance_tracker_test` database** (testutil default DSN updated to port 5466). Previously `testutil.CleanTable` was wiping the dev DB — including the 28 seeded globals (restored by re-running the migration 000009 seed inserts). New mise task: `mise run test-db-setup` creates + migrates the test DB.
+- Full suite green: 35 tests passing.
+
+### i18n for admin pages (Plan 6 item 1 — DONE)
+- New `admin` namespace in `en.json`/`es.json` (+ `nav.admin`, `common.saving`, `settings.profile*` keys)
+- Wired `useTranslations` through: admin layout, sidebar, header, stats page, categories page, stats cards, category-admin-manager (all dialogs/toasts/placeholders), and the main header's Admin link
+- Also fixed `profile-manager.tsx`: hardcoded strings translated, broken `t("profile") || "Profile"` fallback removed, and a pre-existing **type error** (`onValueChange={setCurrency}` incompatible with the Select's `string | null` signature) that was failing `npm run build`.
+- `npm run build` passes; remaining lint errors are pre-existing in wishlist/budget-form files.
+
+### Browser-testing fixes (from manual QA)
+- **Selects showed raw UUIDs/enum codes** (e.g. category as `43588d6f-…` in Add Debt): Base UI's `SelectValue` renders the raw value until the popup has mounted. Fixed by passing `items` to the Select root in: debt-form, expense-form, card-form, budget-form (category + month), wishlist-form (category/priority/status), payment-method-manager (type), profile-manager (currency/language). Verified in browser: trigger now shows "Eating Out", "MXN — Mexican Peso", "English", "Cash".
+- **Empty payment-methods UX**: debt/expense forms and the Add Card dialog now show "No payment methods yet. Add one in Settings" (linked to `/[year]/settings`) instead of an empty select. New EN/ES keys: `common.noPaymentMethods`, `common.addInSettings`, `cards.noCreditCardMethods`.
+- Test user documented in README step 7 (`ft-tester-8k2p@mailinator.com`; `devdielreyes+test@gmail.com` is the confirmed working one).
+
+---
+
+## Previous Session (2026-04-12)
 
 ### Plan 5 — Admin Dashboard & Category Revamp (ALL STEPS DONE)
 
@@ -110,7 +131,7 @@ These features were implemented but not manually tested in a running browser:
 
 Plan 5 is fully complete. Here are potential next steps (not yet designed or prioritized):
 
-1. **i18n completion** — admin pages use hardcoded English, add to translation files
+1. ~~**i18n completion** — admin pages use hardcoded English~~ ✅ Done 2026-07-19
 2. **Admin user management** — `GET /api/v1/admin/users` (list), `GET /api/v1/admin/users/:id` (detail with stats). Requires Supabase Admin API integration.
 3. **Audit logging** — track admin actions (category create/update/delete)
 4. **Currency formatting** — use profile.currency to format amounts across the app
