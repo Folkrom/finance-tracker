@@ -51,6 +51,26 @@ func (r *PaymentMethodRepository) Update(pm *model.PaymentMethod) error {
 	return r.db.Save(pm).Error
 }
 
+// SeedDefaults creates the catalogue-default payment methods for a user.
+// Currently only "Cash" — skipped if the user already has a cash-type method.
+func (r *PaymentMethodRepository) SeedDefaults(userID uuid.UUID) error {
+	var count int64
+	err := r.db.Model(&model.PaymentMethod{}).
+		Where("user_id = ? AND type = ?", userID, model.PaymentMethodCash).
+		Count(&count).Error
+	if err != nil {
+		return err
+	}
+	if count > 0 {
+		return nil
+	}
+	return r.db.Create(&model.PaymentMethod{
+		Base: model.Base{UserID: userID},
+		Name: "Cash",
+		Type: model.PaymentMethodCash,
+	}).Error
+}
+
 func (r *PaymentMethodRepository) Delete(userID, id uuid.UUID) error {
 	return r.db.
 		Where("id = ? AND user_id = ?", id, userID).

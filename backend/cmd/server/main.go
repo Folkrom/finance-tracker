@@ -85,7 +85,7 @@ func main() {
 	}))
 
 	// Routes
-	router.Setup(app, jwks.Keyfunc, profileRepo, categoryHandler, paymentMethodHandler, incomeHandler, expenseHandler, debtHandler, budgetHandler, dashboardHandler, cardHandler, wishlistHandler, profileHandler, adminHandler)
+	router.Setup(app, jwks.Keyfunc, profileRepo, paymentMethodRepo, categoryHandler, paymentMethodHandler, incomeHandler, expenseHandler, debtHandler, budgetHandler, dashboardHandler, cardHandler, wishlistHandler, profileHandler, adminHandler)
 
 	logger.Info("server starting", zap.String("port", cfg.Port))
 	log.Fatal(app.Listen(":" + cfg.Port))

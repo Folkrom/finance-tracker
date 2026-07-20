@@ -10,7 +10,8 @@ import (
 )
 
 // NewProfileMiddleware ensures a profile exists for every authenticated user.
-func NewProfileMiddleware(profileRepo *repository.ProfileRepository) fiber.Handler {
+// On first profile creation it also seeds catalogue-default payment methods.
+func NewProfileMiddleware(profileRepo *repository.ProfileRepository, paymentMethodRepo *repository.PaymentMethodRepository) fiber.Handler {
 	var seen sync.Map
 
 	return func(c *fiber.Ctx) error {
@@ -35,6 +36,11 @@ func NewProfileMiddleware(profileRepo *repository.ProfileRepository) fiber.Handl
 							"error": "failed to create profile",
 						})
 					}
+				}
+				if seedErr := paymentMethodRepo.SeedDefaults(userID); seedErr != nil {
+					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+						"error": "failed to seed default payment methods",
+					})
 				}
 			} else {
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

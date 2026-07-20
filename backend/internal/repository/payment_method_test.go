@@ -118,3 +118,39 @@ func TestPaymentMethodRepository_Delete(t *testing.T) {
 	require.NoError(t, err)
 	assert.Len(t, list, 0)
 }
+
+func TestPaymentMethodRepository_SeedDefaults(t *testing.T) {
+	db := testutil.SetupTestDB(t)
+	repo := repository.NewPaymentMethodRepository(db)
+
+	// New user gets a default Cash payment method
+	userID := uuid.New()
+	require.NoError(t, repo.SeedDefaults(userID))
+
+	pms, err := repo.ListByUser(userID)
+	require.NoError(t, err)
+	require.Len(t, pms, 1)
+	assert.Equal(t, "Cash", pms[0].Name)
+	assert.Equal(t, model.PaymentMethodCash, pms[0].Type)
+
+	// Idempotent: seeding again does not duplicate
+	require.NoError(t, repo.SeedDefaults(userID))
+	pms, err = repo.ListByUser(userID)
+	require.NoError(t, err)
+	assert.Len(t, pms, 1)
+
+	// User with an existing cash method is left alone
+	userID2 := uuid.New()
+	existing := &model.PaymentMethod{
+		Base: model.Base{UserID: userID2},
+		Name: "Efectivo",
+		Type: model.PaymentMethodCash,
+	}
+	require.NoError(t, repo.Create(existing))
+	require.NoError(t, repo.SeedDefaults(userID2))
+
+	pms2, err := repo.ListByUser(userID2)
+	require.NoError(t, err)
+	assert.Len(t, pms2, 1)
+	assert.Equal(t, "Efectivo", pms2[0].Name)
+}

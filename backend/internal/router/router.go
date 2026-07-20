@@ -12,6 +12,7 @@ func Setup(
 	app *fiber.App,
 	keyfunc jwt.Keyfunc,
 	profileRepo *repository.ProfileRepository,
+	paymentMethodRepo *repository.PaymentMethodRepository,
 	categoryHandler *handler.CategoryHandler,
 	paymentMethodHandler *handler.PaymentMethodHandler,
 	incomeHandler *handler.IncomeHandler,
@@ -28,7 +29,7 @@ func Setup(
 		return c.JSON(fiber.Map{"status": "ok"})
 	})
 
-	api := app.Group("/api/v1", middleware.NewAuthMiddleware(keyfunc), middleware.NewProfileMiddleware(profileRepo))
+	api := app.Group("/api/v1", middleware.NewAuthMiddleware(keyfunc), middleware.NewProfileMiddleware(profileRepo, paymentMethodRepo))
 
 	// Categories
 	categories := api.Group("/categories")
