@@ -2,11 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { useAdmin } from "@/hooks/use-admin";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { AdminHeader } from "@/components/admin/admin-header";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const t = useTranslations("common");
   const { isAdmin, loading } = useAdmin();
   const router = useRouter();
 
@@ -20,7 +22,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen text-muted-foreground">
-        Loading...
+        {t("loading")}
       </div>
     );
   }

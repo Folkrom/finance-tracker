@@ -2,11 +2,14 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 
 export function AdminHeader() {
+  const t = useTranslations("admin");
+  const tAuth = useTranslations("auth");
   const router = useRouter();
 
   async function handleLogout() {
@@ -25,10 +28,10 @@ export function AdminHeader() {
         className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
       >
         <ArrowLeft className="size-4" />
-        Back to app
+        {t("backToApp")}
       </Link>
       <Button variant="ghost" size="sm" onClick={handleLogout}>
-        Logout
+        {tAuth("logout")}
       </Button>
     </header>
   );

@@ -11,6 +11,7 @@ import { Shield } from "lucide-react";
 
 export function Header() {
   const t = useTranslations("auth");
+  const tNav = useTranslations("nav");
   const router = useRouter();
   const { isAdmin } = useAdmin();
 
@@ -29,7 +30,7 @@ export function Header() {
           <Link href="/admin">
             <Button variant="ghost" size="sm" className="gap-1">
               <Shield className="size-4" />
-              Admin
+              {tNav("admin")}
             </Button>
           </Link>
         )}

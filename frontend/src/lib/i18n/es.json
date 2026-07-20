@@ -7,9 +7,12 @@
     "create": "Crear",
     "search": "Buscar",
     "loading": "Cargando...",
+    "saving": "Guardando...",
     "noResults": "No se encontraron resultados",
     "confirm": "¿Estás seguro?",
-    "currency": "Moneda"
+    "currency": "Moneda",
+    "noPaymentMethods": "Aún no hay métodos de pago.",
+    "addInSettings": "Agrégalo en Configuración"
   },
   "nav": {
     "dashboard": "Inicio",
@@ -19,7 +22,8 @@
     "budget": "Presupuesto",
     "cards": "Tarjetas",
     "wishlist": "Lista de Deseos",
-    "settings": "Configuración"
+    "settings": "Configuración",
+    "admin": "Admin"
   },
   "income": {
     "title": "Ingresos",
@@ -101,6 +105,7 @@
     "totalUsage": "Uso Total",
     "recommendedMaxPct": "% Máximo Recomendado",
     "selectCreditCard": "Selecciona un método de pago tipo tarjeta de crédito",
+    "noCreditCardMethods": "Aún no hay métodos de pago de tarjeta de crédito.",
     "healthy": "Saludable",
     "recommended": "En Máximo Recomendado",
     "warning": "Advertencia",
@@ -145,7 +150,10 @@
     "addCategory": "Agregar Categoría",
     "addPaymentMethod": "Agregar Método de Pago",
     "seedDefaults": "Cargar Categorías Predeterminadas",
-    "language": "Idioma"
+    "language": "Idioma",
+    "profile": "Perfil",
+    "profileUpdated": "Perfil actualizado",
+    "profileUpdateFailed": "Error al actualizar el perfil"
   },
   "auth": {
     "login": "Iniciar Sesión",
@@ -153,5 +161,39 @@
     "email": "Correo Electrónico",
     "password": "Contraseña",
     "logout": "Cerrar Sesión"
+  },
+  "admin": {
+    "panelTitle": "Panel de Administración",
+    "stats": "Estadísticas",
+    "categories": "Categorías",
+    "backToApp": "Volver a la app",
+    "statsTitle": "Estadísticas de la Plataforma",
+    "categoriesTitle": "Categorías Globales",
+    "users": "Usuarios",
+    "profiles": "Perfiles",
+    "globalCategories": "Categorías Globales",
+    "userCategories": "Categorías de Usuario",
+    "loadStatsFailed": "Error al cargar las estadísticas",
+    "loadCategoriesFailed": "Error al cargar las categorías",
+    "add": "Agregar",
+    "none": "Ninguna",
+    "domains": {
+      "income": "Ingresos",
+      "expense": "Gastos",
+      "wishlist": "Lista de Deseos"
+    },
+    "createCategoryTitle": "Crear categoría de {domain}",
+    "editCategoryTitle": "Editar categoría",
+    "deleteCategoryTitle": "¿Eliminar \"{name}\"?",
+    "deleteCategoryWarning": "Todas las referencias a esta categoría serán reasignadas a la categoría \"Other\" del dominio {domain}. Esta acción no se puede deshacer.",
+    "namePlaceholder": "Nombre",
+    "colorPlaceholder": "Color (#hex, opcional)",
+    "sortOrderPlaceholder": "Orden",
+    "categoryCreated": "Categoría creada",
+    "categoryUpdated": "Categoría actualizada",
+    "categoryDeleted": "Categoría eliminada",
+    "createFailed": "Error al crear",
+    "updateFailed": "Error al actualizar",
+    "deleteFailed": "Error al eliminar"
   }
 }

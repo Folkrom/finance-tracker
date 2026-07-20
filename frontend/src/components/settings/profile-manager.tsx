@@ -37,6 +37,7 @@ const LANGUAGES = [
 
 export function ProfileManager({ profile, onRefresh }: ProfileManagerProps) {
   const t = useTranslations("settings");
+  const tCommon = useTranslations("common");
   const [currency, setCurrency] = useState(profile.currency);
   const [language, setLanguage] = useState(profile.language);
   const [saving, setSaving] = useState(false);
@@ -47,10 +48,10 @@ export function ProfileManager({ profile, onRefresh }: ProfileManagerProps) {
     setSaving(true);
     try {
       await apiPut<Profile>("/api/v1/profile", { currency, language });
-      toast.success("Profile updated");
+      toast.success(t("profileUpdated"));
       onRefresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to update profile");
+      toast.error(err instanceof Error ? err.message : t("profileUpdateFailed"));
     } finally {
       setSaving(false);
     }
@@ -58,12 +59,18 @@ export function ProfileManager({ profile, onRefresh }: ProfileManagerProps) {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold">{t("profile") || "Profile"}</h2>
+      <h2 className="text-lg font-semibold">{t("profile")}</h2>
 
       <div className="flex gap-4 items-end flex-wrap">
         <div className="space-y-1">
-          <Label>Currency</Label>
-          <Select value={currency} onValueChange={setCurrency}>
+          <Label>{tCommon("currency")}</Label>
+          <Select
+            items={CURRENCIES}
+            value={currency}
+            onValueChange={(val) => {
+              if (val) setCurrency(val);
+            }}
+          >
             <SelectTrigger className="w-56">
               <SelectValue />
             </SelectTrigger>
@@ -78,8 +85,14 @@ export function ProfileManager({ profile, onRefresh }: ProfileManagerProps) {
         </div>
 
         <div className="space-y-1">
-          <Label>Language</Label>
-          <Select value={language} onValueChange={setLanguage}>
+          <Label>{t("language")}</Label>
+          <Select
+            items={LANGUAGES}
+            value={language}
+            onValueChange={(val) => {
+              if (val) setLanguage(val);
+            }}
+          >
             <SelectTrigger className="w-40">
               <SelectValue />
             </SelectTrigger>
@@ -94,7 +107,7 @@ export function ProfileManager({ profile, onRefresh }: ProfileManagerProps) {
         </div>
 
         <Button onClick={handleSave} disabled={saving || !hasChanges}>
-          {saving ? "Saving..." : "Save"}
+          {saving ? tCommon("saving") : tCommon("save")}
         </Button>
       </div>
     </div>

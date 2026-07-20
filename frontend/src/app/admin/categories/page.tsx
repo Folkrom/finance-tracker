@@ -2,11 +2,14 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { apiGet } from "@/lib/api";
 import { Category, ListResponse } from "@/types";
 import { CategoryAdminManager } from "@/components/admin/category-admin-manager";
 
 export default function AdminCategoriesPage() {
+  const t = useTranslations("admin");
+  const tCommon = useTranslations("common");
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -19,11 +22,11 @@ export default function AdminCategoriesPage() {
       ]);
       setCategories([...income.data, ...expense.data, ...wishlist.data]);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to load categories");
+      toast.error(err instanceof Error ? err.message : t("loadCategoriesFailed"));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     loadCategories();
@@ -32,14 +35,14 @@ export default function AdminCategoriesPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12 text-muted-foreground">
-        Loading...
+        {tCommon("loading")}
       </div>
     );
   }
 
   return (
     <div className="space-y-6 max-w-3xl">
-      <h1 className="text-2xl font-bold">Global Categories</h1>
+      <h1 className="text-2xl font-bold">{t("categoriesTitle")}</h1>
       <CategoryAdminManager categories={categories} onRefresh={loadCategories} />
     </div>
   );

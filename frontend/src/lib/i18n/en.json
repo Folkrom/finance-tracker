@@ -7,9 +7,12 @@
     "create": "Create",
     "search": "Search",
     "loading": "Loading...",
+    "saving": "Saving...",
     "noResults": "No results found",
     "confirm": "Are you sure?",
-    "currency": "Currency"
+    "currency": "Currency",
+    "noPaymentMethods": "No payment methods yet.",
+    "addInSettings": "Add one in Settings"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -19,7 +22,8 @@
     "budget": "Budget",
     "cards": "Cards",
     "wishlist": "Wishlist",
-    "settings": "Settings"
+    "settings": "Settings",
+    "admin": "Admin"
   },
   "income": {
     "title": "Income",
@@ -101,6 +105,7 @@
     "totalUsage": "Total Usage",
     "recommendedMaxPct": "Recommended Max %",
     "selectCreditCard": "Select a credit card payment method",
+    "noCreditCardMethods": "No credit card payment methods yet.",
     "healthy": "Healthy",
     "recommended": "At Recommended Max",
     "warning": "Warning",
@@ -145,7 +150,10 @@
     "addCategory": "Add Category",
     "addPaymentMethod": "Add Payment Method",
     "seedDefaults": "Load Default Categories",
-    "language": "Language"
+    "language": "Language",
+    "profile": "Profile",
+    "profileUpdated": "Profile updated",
+    "profileUpdateFailed": "Failed to update profile"
   },
   "auth": {
     "login": "Log In",
@@ -153,5 +161,39 @@
     "email": "Email",
     "password": "Password",
     "logout": "Log Out"
+  },
+  "admin": {
+    "panelTitle": "Admin Panel",
+    "stats": "Stats",
+    "categories": "Categories",
+    "backToApp": "Back to app",
+    "statsTitle": "Platform Stats",
+    "categoriesTitle": "Global Categories",
+    "users": "Users",
+    "profiles": "Profiles",
+    "globalCategories": "Global Categories",
+    "userCategories": "User Categories",
+    "loadStatsFailed": "Failed to load stats",
+    "loadCategoriesFailed": "Failed to load categories",
+    "add": "Add",
+    "none": "None",
+    "domains": {
+      "income": "Income",
+      "expense": "Expense",
+      "wishlist": "Wishlist"
+    },
+    "createCategoryTitle": "Create {domain} category",
+    "editCategoryTitle": "Edit category",
+    "deleteCategoryTitle": "Delete \"{name}\"?",
+    "deleteCategoryWarning": "All references to this category will be reassigned to the \"Other\" category for the {domain} domain. This cannot be undone.",
+    "namePlaceholder": "Name",
+    "colorPlaceholder": "Color (#hex, optional)",
+    "sortOrderPlaceholder": "Sort order",
+    "categoryCreated": "Category created",
+    "categoryUpdated": "Category updated",
+    "categoryDeleted": "Category deleted",
+    "createFailed": "Failed to create",
+    "updateFailed": "Failed to update",
+    "deleteFailed": "Failed to delete"
   }
 }

@@ -2,28 +2,30 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { BarChart3, Tags } from "lucide-react";
 
 const navItems = [
-  { label: "Stats", path: "/admin/stats", icon: BarChart3 },
-  { label: "Categories", path: "/admin/categories", icon: Tags },
-];
+  { key: "stats", path: "/admin/stats", icon: BarChart3 },
+  { key: "categories", path: "/admin/categories", icon: Tags },
+] as const;
 
 export function AdminSidebar() {
+  const t = useTranslations("admin");
   const pathname = usePathname();
 
   return (
     <aside className="w-64 border-r bg-white h-screen sticky top-0 flex flex-col">
       <div className="p-6">
-        <h1 className="text-xl font-bold">Admin Panel</h1>
+        <h1 className="text-xl font-bold">{t("panelTitle")}</h1>
       </div>
       <nav className="flex-1 px-3">
         {navItems.map((item) => {
           const isActive = pathname.startsWith(item.path);
           return (
             <Link
-              key={item.path}
+              key={item.key}
               href={item.path}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors mb-1",
@@ -33,7 +35,7 @@ export function AdminSidebar() {
               )}
             >
               <item.icon className="size-4" />
-              {item.label}
+              {t(item.key)}
             </Link>
           );
         })}
