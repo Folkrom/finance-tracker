@@ -18,15 +18,15 @@ func TestBudgetRepository_Create(t *testing.T) {
 	testutil.CleanTable(t, db, "categories")
 
 	catRepo := repository.NewCategoryRepository(db)
+	userID := uuid.New()
 	cat := &model.Category{
-		Base: model.Base{UserID: uuid.New()},
-		Name: "Food",
+		UserID: &userID,
+		Name:   "Food",
 		Domain: model.CategoryDomainExpense,
 	}
 	require.NoError(t, catRepo.Create(cat))
 
 	repo := repository.NewBudgetRepository(db)
-	userID := uuid.New()
 
 	budget := &model.Budget{
 		Base:         model.Base{UserID: userID},
@@ -50,8 +50,8 @@ func TestBudgetRepository_ListByMonthYear(t *testing.T) {
 	catRepo := repository.NewCategoryRepository(db)
 	userID := uuid.New()
 
-	cat1 := &model.Category{Base: model.Base{UserID: userID}, Name: "Food", Domain: model.CategoryDomainExpense}
-	cat2 := &model.Category{Base: model.Base{UserID: userID}, Name: "Transport", Domain: model.CategoryDomainExpense}
+	cat1 := &model.Category{UserID: &userID, Name: "Food", Domain: model.CategoryDomainExpense}
+	cat2 := &model.Category{UserID: &userID, Name: "Transport", Domain: model.CategoryDomainExpense}
 	require.NoError(t, catRepo.Create(cat1))
 	require.NoError(t, catRepo.Create(cat2))
 
@@ -68,21 +68,11 @@ func TestBudgetRepository_ListByMonthYear(t *testing.T) {
 	}
 	require.NoError(t, repo.Create(override))
 
-	// Recurring template
-	recurring := &model.Budget{
-		Base:         model.Base{UserID: userID},
-		CategoryID:   cat2.ID,
-		MonthlyLimit: decimal.NewFromFloat(1500),
-		Month:        0,
-		Year:         0,
-		IsRecurring:  true,
-	}
-	// For recurring, bypass unique constraint by inserting directly
+	// Recurring template — insert directly to bypass unique constraint
 	require.NoError(t, db.Exec(
 		"INSERT INTO budgets (id, user_id, category_id, monthly_limit, month, year, is_recurring) VALUES (gen_random_uuid(), ?, ?, ?, ?, ?, ?)",
 		userID, cat2.ID, decimal.NewFromFloat(1500), 1, 2026, true,
 	).Error)
-	_ = recurring
 
 	list, err := repo.ListByMonthYear(userID, 1, 2026)
 	require.NoError(t, err)
@@ -100,15 +90,15 @@ func TestBudgetRepository_Update(t *testing.T) {
 	testutil.CleanTable(t, db, "categories")
 
 	catRepo := repository.NewCategoryRepository(db)
+	userID := uuid.New()
 	cat := &model.Category{
-		Base: model.Base{UserID: uuid.New()},
-		Name: "Food",
+		UserID: &userID,
+		Name:   "Food",
 		Domain: model.CategoryDomainExpense,
 	}
 	require.NoError(t, catRepo.Create(cat))
 
 	repo := repository.NewBudgetRepository(db)
-	userID := uuid.New()
 
 	budget := &model.Budget{
 		Base:         model.Base{UserID: userID},
@@ -135,15 +125,15 @@ func TestBudgetRepository_Delete(t *testing.T) {
 	testutil.CleanTable(t, db, "categories")
 
 	catRepo := repository.NewCategoryRepository(db)
+	userID := uuid.New()
 	cat := &model.Category{
-		Base: model.Base{UserID: uuid.New()},
-		Name: "Food",
+		UserID: &userID,
+		Name:   "Food",
 		Domain: model.CategoryDomainExpense,
 	}
 	require.NoError(t, catRepo.Create(cat))
 
 	repo := repository.NewBudgetRepository(db)
-	userID := uuid.New()
 
 	budget := &model.Budget{
 		Base:         model.Base{UserID: userID},

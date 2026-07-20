@@ -29,8 +29,8 @@ func TestBudgetHandler_CreateAndGetSummary(t *testing.T) {
 	catRepo := repository.NewCategoryRepository(db)
 	userID := uuid.New()
 	cat := &model.Category{
-		Base: model.Base{UserID: userID},
-		Name: "Food",
+		UserID: &userID,
+		Name:   "Food",
 		Domain: model.CategoryDomainExpense,
 	}
 	require.NoError(t, catRepo.Create(cat))

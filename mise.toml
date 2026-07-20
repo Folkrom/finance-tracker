@@ -23,7 +23,14 @@ description = "Rollback last migration"
 
 [tasks.test-backend]
 run = "cd backend && go test ./... -v"
-description = "Run backend tests"
+description = "Run backend tests (uses finance_tracker_test DB, see test-db-setup)"
+
+[tasks.test-db-setup]
+run = """
+docker compose exec postgres psql -U finance -d finance_tracker -c 'CREATE DATABASE finance_tracker_test OWNER finance;' || true
+cd backend && go run -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest -path=migrations -database "postgres://finance:finance_dev@localhost:5466/finance_tracker_test?sslmode=disable" up
+"""
+description = "Create and migrate the test database"
 
 [tasks.test-frontend]
 run = "cd frontend && npm test"
